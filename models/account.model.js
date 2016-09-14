@@ -1,4 +1,4 @@
-'use-strict'
+'use strict'
 var hashTool = require('../lib/utils/hash.js');
 
 var AccountModel = function(_db) {
@@ -87,68 +87,56 @@ AccountModel.prototype.updatePasswordById = function(_account, callback) {
         .catch(updateUnsuccesfulThenReturnErrorMessage);
 };
 
-AccountModel.prototype.findById = function(_id, callback){
+AccountModel.prototype.findById = function(_id, callback) {
     var queryString = "SELECT * FROM accounts WHERE id = $1";
     var values = [_id];
 
-    var accountFound = function(data){
+    var accountFound = function(data) {
         return callback(false, data);
     };
-    var accountNotFound = function(err){
+    var accountNotFound = function(err) {
         return callback(true, err);
     };
 
-    this.db.one(queryString,values)
+    this.db.one(queryString, values)
         .then(accountFound)
         .catch(accountNotFound);
 };
 
 
-AccountModel.prototype.findByEmail = function(_email, callback){
+AccountModel.prototype.findByEmail = function(_email, callback) {
     var queryString = "SELECT * FROM accounts WHERE email = $1";
     var values = [_email];
 
-    var accountFound = function(data){
+    var accountFound = function(data) {
         return callback(false, data);
     };
-    var accountNotFound = function(err){
+    var accountNotFound = function(err) {
         return callback(true, err);
     };
 
-    this.db.one(queryString,values)
+    this.db.one(queryString, values)
         .then(accountFound)
         .catch(accountNotFound);
 };
 
-
-// AccountModel.prototype.findOne = function(options, callback){
-//     var queryString = "SELECT * FROM accounts ";
-//     var values = [];
-
-//     if(!options){
-//         return callback(true, null);
-//     };
-
-//     if(options.email){
-//         queryString += "WHERE email = $"
-//     }
-// };
-
-AccountModel.prototype.isValidUserPassword = function(email, password, callback){
+AccountModel.prototype.isValidUserPassword = function(email, password, callback) {
     var result = true;
-    this.findByEmail(email, function(err, account){
-        if(err){
+    this.findByEmail(email, function(err, account) {
+        if (err) {
             result = false;
-            return callback(result, {message: 'Incorrect Email!'});
-        }else{
+            return callback(result, { message: 'Incorrect Email!' });
+        } else {
             var hash = hashTool.hashPasswordWithSalt(password, account.salt);
-            if(hash != account.hash){
+            if (hash != account.hash) {
                 result = false;
-                return callback(result, {message: 'Incorrect Password!'});
-            }else{
-                return callback(result, {message: 'Email and Password are valid'})
+                return callback(result, { message: 'Incorrect Password!' });
+            } else {
+                return callback(result, { message: 'Email and Password are valid' })
             }
         }
     });
 };
+
+
 module.exports = AccountModel;
