@@ -29,6 +29,9 @@ app.get('/', function(req, res) {
     res.send('hello guy!');
 });
 
+// setup api
+require('./routers/api.js')(app);
+
 app.listen(app.get('port'), function() {
     console.log("server started on http://localhost:" + app.get('port') + ";\n please press Ctrl+C to terminate");
 });

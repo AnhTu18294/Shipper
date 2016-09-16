@@ -1,5 +1,4 @@
 var AccountModel = require('../../models/account.model.js');
-
 var config = require('../../configs/config.js');
 var Account = require('../../lib/models/account.js');
 var options = {
@@ -18,17 +17,17 @@ var db = pgp(cn);
 
 var account = new Account();
 
-account.setEmail('123@gmail.com')
-	.setUserName('AnhTu18294')
-	.setPassword('Password212')
-	.setRole('shipper')
+account.setEmail('123456789@gmail.com')
+	.setUserName('AnhTu131311')
+	.setPassword('Password2')
+	.setRole('shipper');
 
 var accountModel = new AccountModel(db);
 
 // accountModel.insertAnAccount(account, function(err, data){
 // 	console.log(data);
 // });
-// accountModel.findById(2, function(err, data){
+// // accountModel.findById(2, function(err, data){
 // 	console.log(data);
 // });
 
@@ -53,6 +52,6 @@ var accountModel = new AccountModel(db);
 // 	console.log('a co gia tri');
 // }
 
-accountModel.isValidUserPassword('123@gmail.com', 'Password2123', function(result, message){
-	console.log(message);
-})
+// accountModel.isValidUserPassword('123@gmail.com', 'Password2123', function(result, message){
+// 	console.log(message);
+// })
