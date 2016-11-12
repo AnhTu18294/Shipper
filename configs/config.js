@@ -1,7 +1,7 @@
 module.exports.postgresql = {
 	'host': 'localhost',
 	'port': '5432',
-	'database': 'Test',
+	'database': 'Shipper_v1',
 	'user': 'postgres'
 };
 
