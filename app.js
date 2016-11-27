@@ -24,12 +24,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.set('db', db);
 
-app.get('/', function(req, res) {
-    // console.log(req.app.get('db'));
-    res.send('hello guy!');
-});
-
-// setup api
 require('./routers/api.js')(app);
 
 app.listen(app.get('port'), function() {

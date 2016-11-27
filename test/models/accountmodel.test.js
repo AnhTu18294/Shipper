@@ -1,6 +1,9 @@
 var AccountModel = require('../../models/account.model.js');
+var Shipper = require('../../entities/shipper.js');
+var Store = require('../../entities/store.js');
+var Location = require('../../entities/location.js');
 var config = require('../../configs/config.js');
-var Account = require('../../lib/models/account.js');
+
 var options = {
     error: function (error, e) {
         if (e.cn) {            
@@ -12,46 +15,57 @@ var options = {
 
 var pgp = require('pg-promise')(options);
 var cn  = config.postgresql;
-console.log(cn);
+// console.log(cn);
 var db = pgp(cn);
-
-var account = new Account();
-
-account.setEmail('123456789@gmail.com')
-	.setUserName('AnhTu131311')
-	.setPassword('Password2')
-	.setRole('shipper');
 
 var accountModel = new AccountModel(db);
 
-// accountModel.insertAnAccount(account, function(err, data){
-// 	console.log(data);
-// });
-// // accountModel.findById(2, function(err, data){
-// 	console.log(data);
-// });
+// var account = new Shipper();
 
-// account.setId(1);
-// accountModel.updateUserNameById(account, function(err, data){
-// 	console.log(data);
-// });
+// account.email = '1@gmail.com';
+// account.password = '1@gmail.com';
+// account.name = 'jaybo';
+// account.phoneNumber = '0123456789';
+// account.address = 'Tan Mai, Hoang Mai, Ha Noi';
+// account.birthday = '1994-02-18';
+// account.longitude = 12.5;
+// account.latitude = 12.5;
+// account.createdTime = new Date();
+// account.updatedTIme = new Date();
 
-// accountModel.updatePasswordById(account, function(err, data){
-// 	console.log(data);
-// });
-
-// accountModel.deleteAnAccount(1,function(err, data){
-// 	console.log(data);
-// });
-
-
-// var a = '12sds';
-// if(!a){
-// 	console.log('a bi null roi');
-// }else{
-// 	console.log('a co gia tri');
-// }
-
-// accountModel.isValidUserPassword('123@gmail.com', 'Password2123', function(result, message){
+// accountModel.createShipperAccount(account, function(err, message, data){
+// 	console.log(err);
 // 	console.log(message);
-// })
+// 	console.log(data);
+// });
+
+
+var account1 = new Store();
+
+account1.email = '1@gmail.com';
+account1.password = '1@gmail.com';
+account1.name = 'jaybo';
+account1.phoneNumber = '0123456789';
+account1.storeType = "Clothes";
+account1.address = 'Tan Mai, Hoang Mai, Ha Noi';
+account1.createdTime = new Date();
+account1.updatedTIme = new Date();
+var location = new Location();
+location.country = "Viet nam";
+location.city = "Ha Noi";
+location.district = "Hai Ba Trung";
+location.street = "Nguyen An Ninh";
+location.longitude = 100.5;
+location.latitude = 10.6;
+accountModel.createStoreAccount(account1, location, function(err, message, data){
+	console.log("Error:" + err);
+	console.log(message);
+	console.log(data);
+});
+// accountModel.checkAccountExisted('123@gmail.com', 1, function(err, message, result){
+// 		console.log(err + ' | ' + message + ' | ' + result);
+// }); 
+
+
+
+//-------
