@@ -8,6 +8,15 @@ module.exports.checkAccountExisted = function(req, res, next){
 	var email = req.body.email;
 	var role = req.body.role;
 
+	if((role == undefined) || (email == undefined)){
+		var output = {
+			err: true,
+			message: "ERROR: Require a role and an email in request",
+			data: null
+		};
+		res.send(output);
+	}
+
 	var db = req.app.get('db');
 	var accountModel = modelFactory.createAccountModel(db);
 
@@ -15,7 +24,7 @@ module.exports.checkAccountExisted = function(req, res, next){
 		var output = {err: err, message: message, data: data}
 		req.output = output;
 		next();
-	});
+	});	
 };
 
 module.exports.createAccount = function(req, res){

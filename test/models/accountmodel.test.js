@@ -58,7 +58,7 @@ account.updatedTIme = new Date();
 
 accountModel.createShipperAccount(account, function(err, message, data){
 	console.log(err);
-}
+});
 // TEST REGISTER STORE
 
 // var account1 = new Store();

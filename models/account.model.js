@@ -46,18 +46,10 @@ AccountModel.prototype.createShipperAccount = function(_account, callback) {
     _account.activeCode = activeCode;
     _account.resetCode = resetCode;
 
-// <<<<<<< HEAD
     var queryString = "INSERT INTO Shipper(email, password, salt, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, created_time, updated_time, active_code, status, reset_code) "
             + "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) "
             + "RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status";
-    
-// =======
-//     var queryString = 'INSERT INTO Shipper(email, password, salt, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, created_time, updated_time, active_code, status, reset_code) '
-//             + 'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) '
-//             + 'RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status';
-//     var values = [_account.email, _account.password, _account.salt, _account.name, _account.phoneNumber, _account.address, _account.avatar, _account.birthday, _account.longitude, _account.latitude, _account.rating, _account.vote, _account.createdTime, _account.updatedTime, _account.activeCode, _account.status, _account.resetCode];
-
-// >>>>>>> 0bfc47196cc2aacd3a96a44552f023546a83faa1
+   
     var createSuccessfulThenReturnAccountId = function(data) {
         AccountObserver.emit('create-shipper-account',data);
         return callback(false, 'Register Shipper success!', data);
