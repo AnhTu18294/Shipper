@@ -1,6 +1,10 @@
 'use strict'
 var hashTool = require('../lib/utils/hash.js');
+var imageTool = require('../lib/utils/image.js');
 var AccountObserver = require('../observers/accountObserver.js');
+var nodeUuid = require('node-uuid');
+var pathToImageFolder = require('../configs/config.js').imageFolder;
+
 var AccountModel = function(_db) {
     this.db = _db;
 };
@@ -31,6 +35,7 @@ AccountModel.prototype.checkAccountExisted = function(_email, _role, callback) {
 }; 
 
 AccountModel.prototype.createShipperAccount = function(_account, callback) {
+    var self = this;
     var salt = hashTool.generateSaltRandom();
     var hash = hashTool.hashPasswordWithSalt(_account.password, salt);
     var activeCode = hashTool.generateSaltRandom(8);
@@ -44,8 +49,7 @@ AccountModel.prototype.createShipperAccount = function(_account, callback) {
     var queryString = "INSERT INTO Shipper(email, password, salt, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, created_time, updated_time, active_code, status, reset_code) "
             + "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) "
             + "RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status";
-    var values = [_account.email, _account.password, _account.salt, _account.name, _account.phoneNumber, _account.address, _account.avatar, _account.birthday, _account.longitude, _account.latitude, _account.rating, _account.vote, _account.createdTime, _account.updatedTime, _account.activeCode, _account.status, _account.resetCode];
-
+    
     var createSuccessfulThenReturnAccountId = function(data) {
         AccountObserver.emit('create-shipper-account',data);
         return callback(false, "Register success!", data);
@@ -54,10 +58,26 @@ AccountModel.prototype.createShipperAccount = function(_account, callback) {
     var createUnsuccesfulThenReturnErrorMessage = function(err) {
         return callback(true, "Register Error!", err);
     };
-
-    this.db.one(queryString, values)
-        .then(createSuccessfulThenReturnAccountId)
-        .catch(createUnsuccesfulThenReturnErrorMessage);
+    if((_account.imageExtension != undefined) && (_account.imageBase64String != undefined)){
+        var filename = nodeUuid.v4() + '.' + _account.imageExtension;        
+        var path = pathToImageFolder + filename;
+        imageTool.createImageFromBase64String(path, _account.imageBase64String, function(err, message, result){
+            if(err){
+                return callback(true, 'Cannot create Image for avatar', result);
+            }else{
+                _account.avatar = filename;
+                var values = [_account.email, _account.password, _account.salt, _account.name, _account.phoneNumber, _account.address, _account.avatar, _account.birthday, _account.longitude, _account.latitude, _account.rating, _account.vote, _account.createdTime, _account.updatedTime, _account.activeCode, _account.status, _account.resetCode];
+                self.db.one(queryString, values)
+                    .then(createSuccessfulThenReturnAccountId)
+                    .catch(createUnsuccesfulThenReturnErrorMessage);
+            }
+        })
+    }else{
+        var values = [_account.email, _account.password, _account.salt, _account.name, _account.phoneNumber, _account.address, _account.avatar, _account.birthday, _account.longitude, _account.latitude, _account.rating, _account.vote, _account.createdTime, _account.updatedTime, _account.activeCode, _account.status, _account.resetCode];
+        this.db.one(queryString, values)
+            .then(createSuccessfulThenReturnAccountId)
+            .catch(createUnsuccesfulThenReturnErrorMessage);
+    }                    
 }
 
 AccountModel.prototype.createStoreAccount = function(_account, _location, callback) {

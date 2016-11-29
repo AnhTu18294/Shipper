@@ -35,6 +35,11 @@ module.exports.createAccount = function(req, res){
 			account.latitude = req.body.latitude;
 			account.createdTime = new Date();
 			account.updatedTIme = new Date();
+			// if request contains an image
+			if((req.body.imageExtension != undefined) &&(req.body.imageBase64String != undefined)){
+				account.imageExtension = req.body.imageExtension;
+				account.imageBase64String = req.body.imageBase64String;
+			}
 			
 			accountModel.createShipperAccount(account, function(_err, _message, _data){
 				var output = {

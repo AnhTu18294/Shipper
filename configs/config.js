@@ -10,3 +10,5 @@ module.exports.mongodb = {
 	port: '',
 	dbname: ''
 };
+
+module.exports.imageFolder = '/home/anhtu/myproject/Shipper/images/';
