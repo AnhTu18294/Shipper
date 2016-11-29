@@ -8,5 +8,6 @@ var accountController = require('../controllers/account.controller.js');
 
 // register
 router.post('/accounts/register', accountController.checkAccountExisted, accountController.createAccount);
+router.post('/accounts/login', accountController.loginAccount);
 
 module.exports = router;
