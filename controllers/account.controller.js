@@ -1,3 +1,4 @@
+'use strict'
 var modelFactory = require('../models/modelfactory.js');
 var Shipper = require('../entities/shipper.js');
 var Store = require('../entities/store.js');
@@ -14,7 +15,7 @@ module.exports.checkAccountExisted = function(req, res, next){
 		var output = {err: err, message: message, data: data}
 		req.output = output;
 		next();
-	})
+	});
 };
 
 module.exports.createAccount = function(req, res){
@@ -71,7 +72,7 @@ module.exports.createAccount = function(req, res){
 					data: data
 				};
 				res.status(200).send(output);
-			})
+			});
 		}else{
 			var output = {
 				error: true,
@@ -91,4 +92,19 @@ module.exports.createAccount = function(req, res){
 	}
 }
 
+module.exports.loginAccount = function(req, res) {
+	var db = req.app.get('db');
+	var accountModel = modelFactory.createAccountModel(db);
+	var loginInput = {
+		email : req.body.email,
+		password : req.body.password,
+		role : req.body.role
+	};
+
+	accountModel.loginAccount(loginInput , function (err, message, data){
+		console.log(err);
+		console.log(message);
+		console.log(data);
+	});
+}
 
