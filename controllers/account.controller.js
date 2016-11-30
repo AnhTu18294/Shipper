@@ -116,9 +116,11 @@ module.exports.loginAccount = function(req, res) {
 	};
 
 	accountModel.loginAccount(loginInput , function (err, message, data){
-		console.log(err);
-		console.log(message);
-		console.log(data);
+		delete data.password;
+		delete data.salt;
+		delete data.resetCode;
+		var output = {err: err, message: message, data: data}
+		res.send(output);
 	});
 }
 
