@@ -11,4 +11,19 @@ module.exports.mongodb = {
 	dbname: ''
 };
 
+module.exports.sender = {
+	gmail: 'nguyenhuyhoangpfiev@gmail.com',
+	password: 'huyhoang'
+};
+
+module.exports.smtpConfig = {
+	host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
+    auth: {
+        user: 'nguyenhuyhoangpfiev@gmail.com',
+        pass: 'huyhoang'
+    }
+};
+
 module.exports.imageFolder = '/home/anhtu/myproject/Shipper/images/';

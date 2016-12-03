@@ -100,6 +100,7 @@ module.exports.createAccount = function(req, res){
 module.exports.loginAccount = function(req, res) {
 	var db = req.app.get('db');
 	var accountModel = modelFactory.createAccountModel(db);
+	var output = undefined;
 	var loginInput = {
 		email : req.body.email,
 		password : req.body.password,
@@ -107,9 +108,62 @@ module.exports.loginAccount = function(req, res) {
 	};
 
 	accountModel.loginAccount(loginInput , function (err, message, data){
-		console.log(err);
-		console.log(message);
-		console.log(data);
+		output = {err: err, message: message, data};
+		res.send(output);
 	});
 }
 
+module.exports.activeAccount = function(req, res){
+	var role = req.body.role;
+	var idAccount = req.body.idAccount;
+	var activeCode = req.body.activeCode;
+	var db = req.app.get('db');
+	var output = undefined;
+	var accountModel = modelFactory.createAccountModel(db);
+
+	accountModel.activeAccount(role, idAccount, activeCode, function (err, message, data){
+		output = {err: err, message: message, data};
+		res.send(output);
+	});
+}
+
+module.exports.requireResetPassword = function(req, res){
+	var role = req.body.role;
+	var email = req.body.email;
+	var db = req.app.get('db');
+	var output = undefined;
+	var accountModel = modelFactory.createAccountModel(db);
+
+	accountModel.requireResetPassword(role, email, function(err, message, data){
+		output = {err: err, message: message, data};
+		res.send(output);
+	});
+}
+
+module.exports.checkResetCode = function(req, res){
+	var role = req.body.role;
+	var idAccount = req.body.idAccount;
+	var resetCode = req.body.resetCode;
+	var db = req.app.get('db');
+	var output = undefined;
+	var accountModel = modelFactory.createAccountModel(db);
+
+	accountModel.checkResetCode(role, idAccount, resetCode, function(err, message, data){
+		output = {err: err, message: message, data};
+		res.send(output);
+	});
+}
+
+module.exports.updatePassword = function(req, res){
+	var role = req.body.role;
+	var idAccount = req.body.idAccount;
+	var password = req.body.password;
+	var db = req.app.get('db');
+	var output = undefined;
+	var accountModel = modelFactory.createAccountModel(db);
+
+	accountModel.updatePassword(role, idAccount, password, function(err, message, data){
+		output = {err: err, message: message, data};
+		res.send(output);
+	});
+}
