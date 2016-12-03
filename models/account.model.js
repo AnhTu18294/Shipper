@@ -48,10 +48,16 @@ AccountModel.prototype.createShipperAccount = function(_account, callback) {
 
     var queryString = "INSERT INTO Shipper(email, password, salt, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, created_time, updated_time, active_code, status, reset_code) "
             + "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) "
+<<<<<<< HEAD
             + "RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status";
    
+=======
+            + "RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status, active_code";
+    
+>>>>>>> devTu
     var createSuccessfulThenReturnAccountId = function(data) {
         AccountObserver.emit('create-shipper-account',data);
+        delete data.active_code;
         return callback(false, 'Register Shipper success!', data);
     };
 
@@ -97,7 +103,7 @@ AccountModel.prototype.createStoreAccount = function(_account, _location, callba
                 + 'RETURNING id ) '
                 + 'INSERT INTO store (email, password, salt, name, phone_number, store_type, location_id, address, rating, vote, created_time, updated_time, avatar, status, reset_code, active_code) '
                 + 'VALUES ($7, $8, $9, $10, $11, $12, (SELECT id FROM new_location), $13, $14, $15, $16, $17, $18, $19, $20, $21) '
-                + 'RETURNING email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status';
+                + 'RETURNING email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status, active_code';
     var values  = [_location.country, _location.city, _location.district, _location.street, _location.longitude, 
                    _location.latitude, _account.email, _account.password, _account.salt, _account.name, _account.phoneNumber, 
                    _account.storeType, _account.address, _account.rating, _account.vote, _account.createdTime, 
@@ -112,6 +118,7 @@ AccountModel.prototype.createStoreAccount = function(_account, _location, callba
         data.latitude = _location.latitude;
         
         AccountObserver.emit('create-store-account',data);
+        delete data.active_code;
         return callback(false, 'Register Store Account Success!', data);
     };
 
@@ -148,7 +155,162 @@ AccountModel.prototype.loginAccount = function(_loginInput, callback) {
     });
 }
 
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ACTIVE ACCOUNT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+AccountModel.prototype.activeAccount = function(_role, _idAccount, _activeCode, callback){
+    var self = this;
+    var queryString = undefined;
+    var values = [_idAccount, _activeCode];
+    
+    if(_role == 1){
+        queryString = 'SELECT id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status FROM shipper WHERE id = $1 AND active_code = $2';   
+    }else if(_role == 2){
+        queryString = 'SELECT id, email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status FROM store WHERE id = $1 AND active_code = $2';  
+    }else{
+        return callback(true, "ERROR: Role is wrong (select 1 or 2)!", null);
+    }
 
+    var activeCodeValid = function(data){
+        if(_role == 1){
+            queryString = 'UPDATE shipper SET status = $1 WHERE id = $2';
+        }
+        if(_role == 2){
+            queryString = 'UPDATE store SET status = $1 WHERE id = $2';
+        }
+        values = [1, _idAccount];
+
+        var changeStatusError = function(err){
+            return callback(true, 'Active code is RIGHT but there was some errors when trying to change account status', err);
+        };
+
+        var changeStatusSuccessful = function(data){
+            AccountObserver.emit('active-account', {idAccount: _idAccount});
+            return callback(false, 'Account is actived', null);
+        };
+
+        self.db.none(queryString, values)
+            .then(changeStatusSuccessful)
+            .catch(changeStatusError);
+        
+    };
+
+    var activeCodeNotValid = function(err){
+        console.log(err);
+        return callback(true, 'Active Code is WRONG. Account is NOT actived', null);
+    }
+
+    this.db.one(queryString, values)
+        .then(activeCodeValid)
+        .catch(activeCodeNotValid)
+}
+
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> RESET PASSWORD <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+AccountModel.prototype.requireResetPassword = function(_role, _email, callback){
+    var self = this;
+    var queryString = undefined;
+    var values = [_email];
+    if(_role == 1){
+        queryString = 'SELECT id FROM shipper WHERE email = $1';   
+    }else if(_role == 2){
+        queryString = 'SELECT id FROM store WHERE id = $1';  
+    }else{
+        return callback(true, "ERROR: Role is wrong (select 1 or 2)!", null);
+    }
+
+    var emailExsitedThenResetCode = function(data){
+        var resetCode = hashTool.generateSaltRandom(8);
+        console.log(resetCode);
+        if(_role == 1){
+            queryString = 'UPDATE shipper SET reset_code = $1 WHERE id = $2 '
+                        + 'RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status, reset_code';
+        }
+        if(_role == 2){
+            queryString = 'UPDATE store SET reset_code = $1 WHERE id = $2 '
+                        + 'RETURNING id, email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status, reset_code';
+        }
+
+        var setResetCodeSuccessful = function(data){
+            AccountObserver.emit('require-reset-password', data);
+            delete data.reset_code;
+            return callback(false, 'Recreated reset code successful', data);
+        }
+
+        var setResetCodeFailed = function(err){
+            return callback(false, 'Email is CORRECT but cannot create reset code, please try again', err);
+        }
+        values = [resetCode, data.id];
+        self.db.one(queryString, values)
+            .then(setResetCodeSuccessful)
+            .catch(setResetCodeFailed)
+    };
+
+    var emailNotExisted = function(err){
+        console.log(err);
+        return callback(true, 'Email is WRONG. CANNOT reset password', err);
+    };
+
+    this.db.one(queryString, values)
+        .then(emailExsitedThenResetCode)
+        .catch(emailNotExisted);
+};
+
+AccountModel.prototype.checkResetCode = function(_role, _idAccount, _resetCode, callback){
+    var queryString = undefined;
+    var values = [_idAccount, _resetCode];
+
+    if(_role == 1){
+        queryString = 'SELECT id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status FROM shipper WHERE id = $1 AND reset_code = $2';   
+    }else if(_role == 2){
+        queryString = 'SELECT id, email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status FROM store WHERE id = $1 AND reset_code = $2';  
+    }else{
+        return callback(true, "ERROR: Role is wrong (select 1 or 2)!", null);
+    }
+
+    var resetCodeValid = function(data){
+        return callback(false, 'Reset Code is CORRECT', data);
+    };
+
+    var resetCodeNotValid = function(err){
+        return callback(true, 'Reset Code is WRONG. ', err);
+    }
+
+    this.db.one(queryString, values)
+        .then(resetCodeValid)
+        .catch(resetCodeNotValid)
+
+};
+
+AccountModel.prototype.updatePassword = function(_role, _idAccount, _password, callback) {
+    var salt = hashTool.generateSaltRandom();
+    var password = hashTool.hashPasswordWithSalt(_password, salt);
+
+    var queryString = undefined;
+    var values = [password, salt, _idAccount];
+    if(_role == 1){
+        queryString = 'UPDATE shipper SET password = $1, salt = $2 WHERE id = $3 '
+                    + 'RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status';
+    }else if(_role == 2){
+        queryString = 'UPDATE store SET password = $1, salt = $2 WHERE id = $3 '
+                    + 'RETURNING id, email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status';
+    }else{
+        return callback(true, "ERROR: Role is wrong (select 1 or 2)!", null);
+    }
+
+    
+    var updateSuccessfulThenReturnAccountUpdated = function(data) {
+        return callback(false,'Update Password Successful', data);
+    };
+
+    var updateUnsuccesfulThenReturnErrorMessage = function(err) {
+        return callback(true,'CANNOT update Password, please try again', err);
+    };
+
+    this.db.one(queryString, values)
+        .then(updateSuccessfulThenReturnAccountUpdated)
+        .catch(updateUnsuccesfulThenReturnErrorMessage);
+};
+
+// ***********************************************************************************
 AccountModel.prototype.findByEmail = function(_email, _role, callback) {
     var values = [_email];
     
@@ -213,28 +375,7 @@ AccountModel.prototype.updateUserNameById = function(_account, callback) {
         .catch(updateUnsuccesfulThenReturnErrorMessage);
 };
 
-AccountModel.prototype.updatePasswordById = function(_account, callback) {
 
-    var salt = hashTool.generateSaltRandom();
-    var hash = hashTool.hashPasswordWithSalt(_account.password, salt);
-
-    _account.setHash(hash);
-    _account.setSalt(salt);
-    var queryString = 'UPDATE accounts SET hash = $1, salt = $2 WHERE id = $3 returning *';
-    var values = [_account.hash, _account.salt, _account.id];
-
-    var updateSuccessfulThenReturnAccountUpdated = function(data) {
-        return callback(false, data);
-    };
-
-    var updateUnsuccesfulThenReturnErrorMessage = function(err) {
-        return callback(true, err);
-    };
-
-    this.db.one(queryString, values)
-        .then(updateSuccessfulThenReturnAccountUpdated)
-        .catch(updateUnsuccesfulThenReturnErrorMessage);
-};
 
 AccountModel.prototype.findById = function(_id, callback) {
     var queryString = 'SELECT * FROM accounts WHERE id = $1';

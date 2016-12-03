@@ -44,6 +44,7 @@ var base64Str = fs.readFileSync('../lib/utils/decodedImage.txt', 'utf8');
 // 	console.log(data);
 // });
 
+<<<<<<< HEAD
 account.email = '12@gmail.com';
 account.password = '12@gmail.com';
 account.name = 'AnhTu';
@@ -59,6 +60,24 @@ account.updatedTIme = new Date();
 accountModel.createShipperAccount(account, function(err, message, data){
 	console.log(err);
 });
+=======
+// account.email = '12@gmail.com';
+// account.password = '12@gmail.com';
+// account.name = 'AnhTu';
+// account.phoneNumber = '9087654321';
+// account.address = 'Tan Mai, Hoang Mai, Ha Noi';
+// account.birthday = '1994-02-18';
+// account.longitude = 12;
+// account.latitude = 12;
+// account.createdTime = new Date();
+// account.updatedTIme = new Date();
+
+
+// accountModel.createShipperAccount(account, function(err, message, data){
+// 	console.log(err);
+// 	console.log(message);
+// });
+>>>>>>> devTu
 // TEST REGISTER STORE
 
 // var account1 = new Store();
@@ -123,3 +142,26 @@ accountModel.createShipperAccount(account, function(err, message, data){
 // accountModel.checkAccountExisted('123@gmail.com', 1, function(err, message, result){
 // 		console.log(err + ' | ' + message + ' | ' + result);
 // }); 
+
+// TEST ACTIVE CODE
+
+// accountModel.activeAccount(1, 16, '887e8abb', function(err, message, data){
+// 	console.log(message);
+// })
+
+// TEST RESET PASSWORD
+
+// accountModel.requireResetPassword(1, '12@gmail.com', function(err, message, data){
+// 	console.log(message);
+// 	console.log(data);
+// });
+
+// accountModel.checkResetCode(1, 16, 'aaac03377e9', function(err, message, data){
+// 	console.log(message);
+// 	console.log(data);
+// });
+
+accountModel.updatePassword(1, 16, 'anhtu123', function(err, message, data){
+	console.log(message);
+	console.log(data);
+})
