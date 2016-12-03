@@ -48,13 +48,8 @@ AccountModel.prototype.createShipperAccount = function(_account, callback) {
 
     var queryString = "INSERT INTO Shipper(email, password, salt, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, created_time, updated_time, active_code, status, reset_code) "
             + "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) "
-<<<<<<< HEAD
-            + "RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status";
-   
-=======
             + "RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status, active_code";
     
->>>>>>> devTu
     var createSuccessfulThenReturnAccountId = function(data) {
         AccountObserver.emit('create-shipper-account',data);
         delete data.active_code;
@@ -272,12 +267,11 @@ AccountModel.prototype.checkResetCode = function(_role, _idAccount, _resetCode, 
 
     var resetCodeNotValid = function(err){
         return callback(true, 'Reset Code is WRONG. ', err);
-    }
+    };
 
     this.db.one(queryString, values)
         .then(resetCodeValid)
         .catch(resetCodeNotValid)
-
 };
 
 AccountModel.prototype.updatePassword = function(_role, _idAccount, _password, callback) {
@@ -315,7 +309,7 @@ AccountModel.prototype.findByEmail = function(_email, _role, callback) {
     var values = [_email];
     
     var accountFound = function(data) {
-        console.log(data);
+        //console.log(data);
         return callback(false, 'Founded Account!' ,data);
     };
     var accountNotFound = function(err) {

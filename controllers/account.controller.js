@@ -132,6 +132,10 @@ module.exports.activeAccount = function(req, res){
 
 	accountModel.activeAccount(role, idAccount, activeCode, function (err, message, data){
 		output = {err: err, message: message, data};
+		delete data.password;
+		delete data.salt;
+		delete data.resetCode;
+		var output = {err: err, message: message, data: data}
 		res.send(output);
 	});
 }
