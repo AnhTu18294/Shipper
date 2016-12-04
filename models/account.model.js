@@ -98,7 +98,7 @@ AccountModel.prototype.createStoreAccount = function(_account, _location, callba
                 + 'RETURNING id ) '
                 + 'INSERT INTO store (email, password, salt, name, phone_number, store_type, location_id, address, rating, vote, created_time, updated_time, avatar, status, reset_code, active_code) '
                 + 'VALUES ($7, $8, $9, $10, $11, $12, (SELECT id FROM new_location), $13, $14, $15, $16, $17, $18, $19, $20, $21) '
-                + 'RETURNING email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status, active_code';
+                + 'RETURNING id, email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status, active_code';
     var values  = [_location.country, _location.city, _location.district, _location.street, _location.longitude, 
                    _location.latitude, _account.email, _account.password, _account.salt, _account.name, _account.phoneNumber, 
                    _account.storeType, _account.address, _account.rating, _account.vote, _account.createdTime, 
@@ -225,9 +225,9 @@ AccountModel.prototype.requireResetPassword = function(_role, _email, callback){
         }
 
         var setResetCodeSuccessful = function(data){
-            AccountObserver.emit('require-reset-password', data);
+            AccountObserver.emit('require-reset-code', data);
             delete data.reset_code;
-            return callback(false, 'Recreated reset code successful', data);
+            return callback(false, 'Recreated reset code successful', null);
         }
 
         var setResetCodeFailed = function(err){
@@ -249,14 +249,14 @@ AccountModel.prototype.requireResetPassword = function(_role, _email, callback){
         .catch(emailNotExisted);
 };
 
-AccountModel.prototype.checkResetCode = function(_role, _idAccount, _resetCode, callback){
+AccountModel.prototype.checkResetCode = function(_role, _email, _resetCode, callback){
     var queryString = undefined;
-    var values = [_idAccount, _resetCode];
+    var values = [_email, _resetCode];
 
     if(_role == 1){
-        queryString = 'SELECT id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status FROM shipper WHERE id = $1 AND reset_code = $2';   
+        queryString = 'SELECT id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote, status FROM shipper WHERE email = $1 AND reset_code = $2';   
     }else if(_role == 2){
-        queryString = 'SELECT id, email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status FROM store WHERE id = $1 AND reset_code = $2';  
+        queryString = 'SELECT id, email, name, phone_number, store_type, location_id, address, rating, vote, avatar, status FROM store WHERE email = $1 AND reset_code = $2';  
     }else{
         return callback(true, "ERROR: Role is wrong (select 1 or 2)!", null);
     }

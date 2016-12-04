@@ -1,14 +1,19 @@
 'use strict'
 
-//var ShipperModel = require('./shipper.model.js');
 var AccountModel = require('./account.model.js');
+var RequestModel = require('./request.model.js');
+var LocationModel = require('./location.model.js');
 
-// module.exports.createShipperModel = function(db){
-// 	return new ShipperModel(db);
-// };
 
 module.exports.createAccountModel = function(db){
 	return new AccountModel(db);
-}
+};
 
+module.exports.createRequestModel = function(db){
+	return new RequestModel(db);
+};
+
+module.exports.createLocationModel = function(db){
+	return new LocationModel(db);
+}
 
