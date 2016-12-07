@@ -7,6 +7,6 @@ router.post('/accounts/register', accountController.checkAccountExisted, account
 router.post('/accounts/login', accountController.loginAccount);
 router.post('/accounts/active', accountController.activeAccount);
 router.post('/accounts/requireResetPassword', accountController.requireResetPassword);
-router.post('/accounts/checkResetCode', accountController.checkResetCode);
-router.post('/accounts/updatePassword', accountController.updatePassword);
+router.post('/accounts/checkResetCodeAndUpdatePassword', accountController.checkResetCodeAndUpdatePassword);
+// router.post('/accounts/updatePassword', accountController.updatePassword);
 module.exports = router;

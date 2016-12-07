@@ -53,7 +53,7 @@ module.exports.createAccount = function(req, res){
 			
 			accountModel.createShipperAccount(account, function(_err, _message, _data){
 				var output = {
-					error: _err,
+					err: _err,
 					message: _message,
 					data: _data
 				};
@@ -81,7 +81,7 @@ module.exports.createAccount = function(req, res){
 
 			accountModel.createStoreAccount(account, location, function(err, message, data){
 				var output = {
-					error: err,
+					err: err,
 					message: message,
 					data: data
 				};
@@ -89,7 +89,7 @@ module.exports.createAccount = function(req, res){
 			});
 		}else{
 			var output = {
-				error: true,
+				err: true,
 				message: "Role Error !",
 				data: null
 			};
@@ -97,7 +97,7 @@ module.exports.createAccount = function(req, res){
 		}
 	}else{
 		var output = {
-			error: true,
+			err: true,
 			message: "Email existed!",
 			data: null
 		};
@@ -124,23 +124,22 @@ module.exports.loginAccount = function(req, res) {
 
 module.exports.activeAccount = function(req, res){
 	var role = req.body.role;
-	var idAccount = req.body.idAccount;
-	var activeCode = req.body.activeCode;
+	var accountId = req.body.account_id;
+	var activeCode = req.body.active_code;
 	var db = req.app.get('db');
 	var output = undefined;
 	var accountModel = modelFactory.createAccountModel(db);
+	console.log(req.body);
 
-	accountModel.activeAccount(role, idAccount, activeCode, function (err, message, data){
+	accountModel.activeAccount(role, accountId, activeCode, function (err, message, data){
 		output = {err: err, message: message, data};
-		delete data.password;
-		delete data.salt;
-		delete data.resetCode;
 		var output = {err: err, message: message, data: data}
 		res.send(output);
 	});
 }
 
 module.exports.requireResetPassword = function(req, res){
+	console.log(req.body);
 	var role = req.body.role;
 	var email = req.body.email;
 	var db = req.app.get('db');
@@ -153,30 +152,18 @@ module.exports.requireResetPassword = function(req, res){
 	});
 }
 
-module.exports.checkResetCode = function(req, res){
+module.exports.checkResetCodeAndUpdatePassword = function(req, res){
 	var role = req.body.role;
-	var idAccount = req.body.email;
-	var resetCode = req.body.resetCode;
-	var db = req.app.get('db');
-	var output = undefined;
-	var accountModel = modelFactory.createAccountModel(db);
-
-	accountModel.checkResetCode(role, idAccount, resetCode, function(err, message, data){
-		output = {err: err, message: message, data};
-		res.send(output);
-	});
-}
-
-module.exports.updatePassword = function(req, res){
-	var role = req.body.role;
-	var idAccount = req.body.idAccount;
+	var email = req.body.email;
+	var resetCode = req.body.reset_code;
 	var password = req.body.password;
 	var db = req.app.get('db');
 	var output = undefined;
 	var accountModel = modelFactory.createAccountModel(db);
 
-	accountModel.updatePassword(role, idAccount, password, function(err, message, data){
+	accountModel.checkResetCodeAndUpdatePassword(role, email, resetCode, password, function(err, message, data){
 		output = {err: err, message: message, data};
 		res.send(output);
 	});
 }
+
