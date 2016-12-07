@@ -52,3 +52,15 @@ module.exports.getRequestByIdStoreAndStatus = function(req, res){
 		res.json({err: err, message: message, data: data});
 	})
 };
+
+module.exports.updateStatus = function(req, res){
+	var db = req.app.get('db');
+	var requestModel = modelFactory.createRequestModel(db);
+	var requestId = req.params.requestId;
+	var status = req.body.status;
+
+
+	requestModel.updateStatus(requestId, status, function(err, message, data){
+		res.json({err: err, message: message, data: data});
+	})
+}
