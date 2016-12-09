@@ -53,14 +53,69 @@ module.exports.getRequestByIdStoreAndStatus = function(req, res){
 	})
 };
 
-module.exports.updateStatus = function(req, res){
+// update status for request
+
+module.exports.requireConfirmRequest = function(req, res){
 	var db = req.app.get('db');
 	var requestModel = modelFactory.createRequestModel(db);
 	var requestId = req.params.requestId;
-	var status = req.body.status;
 
-
-	requestModel.updateStatus(requestId, status, function(err, message, data){
+	requestModel.requireConfirmRequest(requestId, function(err, message, data){
 		res.json({err: err, message: message, data: data});
 	})
+}
+
+module.exports.confirmCompletedRequest = function(req, res){
+	var db = req.app.get('db');
+	var requestModel = modelFactory.createRequestModel(db);
+	var requestId = req.params.requestId;
+
+	requestModel.confirmCompletedRequest(requestId, function(err, message, data){
+		res.json({err: err, message: message, data: data});
+	})
+}
+
+// load 4 tabs for shipper's home
+module.exports.getLastestRequests =function(req, res) {
+	var db = req.app.get('db');
+	var requestModel = modelFactory.createRequestModel(db);
+	var shipperId = req.params.shipperId;
+	var quantity = 20;
+
+	requestModel.getLastestRequests(shipperId, quantity, function(err, message, data){
+		res.json({err:err, message: message, data: data});
+	});
+}
+
+module.exports.getWaitingRequests =function(req, res) {
+	var db = req.app.get('db');
+	var requestModel = modelFactory.createRequestModel(db);
+	var shipperId = req.params.shipperId;
+	var quantity = 20;
+
+	requestModel.getWaitingRequests(shipperId, quantity, function(err, message, data){
+		res.json({err:err, message: message, data: data});
+	});
+}
+
+module.exports.getProcessingRequests =function(req, res) {
+	var db = req.app.get('db');
+	var requestModel = modelFactory.createRequestModel(db);
+	var shipperId = req.params.shipperId;
+	var quantity = 20;
+
+	requestModel.getProcessingRequests(shipperId, quantity, function(err, message, data){
+		res.json({err:err, message: message, data: data});
+	});
+}
+
+module.exports.getCompletedRequests =function(req, res) {
+	var db = req.app.get('db');
+	var requestModel = modelFactory.createRequestModel(db);
+	var shipperId = req.params.shipperId;
+	var quantity = 20;
+
+	requestModel.getCompletedRequests(shipperId, quantity, function(err, message, data){
+		res.json({err:err, message: message, data: data});
+	});
 }
