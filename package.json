@@ -21,6 +21,7 @@
     "node-uuid": "^1.4.7",
     "nodemailer": "^2.6.4",
     "nodemon": "^1.11.0",
-    "pg-promise": "^5.3.3"
+    "pg-promise": "^5.3.3",
+    "socket.io": "^1.7.1"
   }
 }

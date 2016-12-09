@@ -83,6 +83,11 @@ RequestModel.prototype.updateStatus = function(_requestId, _status, callback) {
     this.db.one(queryString, values)
         .then(changeStatusSuccessful)
         .catch(changeStatusError);
-}
+};
+
+// RequestModel.prototype.getLastedRequest = function(_shipperId, ){
+//     var queryString = ;
+//     var value = []
+// }
 
 module.exports = RequestModel;
