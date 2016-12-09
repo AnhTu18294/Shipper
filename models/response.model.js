@@ -80,8 +80,9 @@ ResponseModel.prototype.acceptResponse = function(_input, callback){
 		var values = [_input.requestId,_input.shipperId];
     	var q1 = this.one('UPDATE response SET status = 2 WHERE request_id = $1 AND shipper_id = $2 RETURNING id, request_id, shipper_id, status', values);
     	var q2 = this.any('UPDATE response SET status = 1 WHERE request_id = $1 AND shipper_id <> $2 RETURNING id, request_id, shipper_id, status', values);
+        var q3 = this.one('UPDATE request SET status = 2 WHERE id = $1 RETURNING id, status', _input.requestId);
       
-	    return this.batch([q1, q2]); 
+	    return this.batch([q1, q2, q3]); 
 	})
     .then(acceptResponseSuccessful)
     .catch(acceptResponseUnsuccesful);
