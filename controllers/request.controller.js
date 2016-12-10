@@ -75,7 +75,7 @@ module.exports.requireConfirmRequest = function(req, res){
 	var storeId = req.body.store_id;
 	var rating = req.body.rating;
 	var vote = req.body.vote;
-	var newRate = req.body.newRate;
+	var newRate = req.body.new_rate;
 
 	var input = {
 		requestId: requestId,
@@ -94,8 +94,20 @@ module.exports.confirmCompletedRequest = function(req, res){
 	var db = req.app.get('db');
 	var requestModel = modelFactory.createRequestModel(db);
 	var requestId = req.params.requestId;
+	var shipperId = req.body.shipper_id;
+	var rating = req.body.rating;
+	var vote = req.body.vote;
+	var newRate = req.body.new_rate;
 
-	requestModel.confirmCompletedRequest(requestId, function(err, message, data){
+	var input = {
+		requestId: requestId,
+		shipperId: shipperId,
+		rating: rating,
+		vote: vote,
+		newRate: newRate
+	}
+	console.log(input);
+	requestModel.confirmCompletedRequest(input, function(err, message, data){
 		res.json({err: err, message: message, data: data});
 	})
 }

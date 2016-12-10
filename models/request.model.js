@@ -159,10 +159,11 @@ RequestModel.prototype.requireConfirmRequest = function(_input, callback) {
     };
 
     var requireConfirmRequestSuccessful = function(data) {
+        RequestObserver.emit('shipper-require-confirm-request', data);
         return callback(false, 'Require confirm for request successful', data);
     };
 
-    if(_input.rate != 0){
+    if(_input.newRate != 0){
         this.db.tx(function (t) {
             var newRating  = (_input.rating * _input.vote + _input.newRate)/(_input.vote + 1);
             var values_1 = [_input.requestId];
@@ -183,10 +184,7 @@ RequestModel.prototype.requireConfirmRequest = function(_input, callback) {
     }
 };
 
-RequestModel.prototype.confirmCompletedRequest = function(_requestId, callback) {
-    
-    var queryString = 'UPDATE request SET status = 4 WHERE id = $1 ' + 'RETURNING *';
-    var values = [_requestId];
+RequestModel.prototype.confirmCompletedRequest = function(_input, callback) {
 
     var confirmCompletedRequestError = function(err) {
         console.log(err);
@@ -194,12 +192,35 @@ RequestModel.prototype.confirmCompletedRequest = function(_requestId, callback) 
     };
 
     var confirmCompletedRequestSuccessful = function(data) {
+        RequestObserver.emit('store-confirm-request', data);
         return callback(false, 'Confirm Completed Request successful', data);
     };
 
-    this.db.one(queryString, values)
+    if(_input.newRate != 0){
+        this.db.tx(function (t) {
+            var newRating  = (_input.rating * _input.vote + _input.newRate)/(_input.vote + 1);
+            var values_1 = [_input.requestId];
+            var values_2 = [newRating, _input.shipperId];
+            var q1 = this.one('UPDATE request SET status = 4 WHERE id = $1 ' + 'RETURNING *', values_1);
+            var q2 = this.one('UPDATE shipper SET rating = $1, vote = vote + 1  WHERE id = $2 RETURNING *', values_2);
+          
+            return this.batch([q1, q2]); 
+        })
         .then(confirmCompletedRequestSuccessful)
         .catch(confirmCompletedRequestError);
+    }else{
+        console.log("hell");
+        var queryString = 'UPDATE request SET status = 4 WHERE id = $1 ' + 'RETURNING *';
+        var values = [_input.requestId];
+        this.db.one(queryString, values)
+        .then(confirmCompletedRequestSuccessful)
+        .catch(confirmCompletedRequestError);
+    }
+
+
+    // this.db.one(queryString, values)
+    //     .then(confirmCompletedRequestSuccessful)
+    //     .catch(confirmCompletedRequestError);
 };
 
 // >>>>>>>>>>>>>>>>>>>>> Get 4 TAB Requests For Shipper <<<<<<<<<<<<<<
