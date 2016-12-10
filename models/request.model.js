@@ -71,7 +71,8 @@ RequestModel.prototype.getRequestByRequestId = function(_requestId, _shipperId, 
     var getRequestSuccessful = function(data) {
         var data1 = data[0];
         var data2 = data[1];
-        var output ={
+        console.log(data2);
+        var output = {
             request: {
                 id: data1.request_id,
                 deposit: data1.deposit,
@@ -114,11 +115,11 @@ RequestModel.prototype.getRequestByRequestId = function(_requestId, _shipperId, 
             }
         }
 
-        if(data2.response_id != null){
-            output.response.id = data2.response_id;
-            output.response.shipper_id = data2.shipper_id;
-            output.response.request_id = data2.request_id;
-            output.response.status = data2.response_status;
+        if(data2.length > 0){
+            output.response.id = data2[0].response_id;
+            output.response.shipper_id = data2[0].shipper_id;
+            output.response.request_id = data2[0].request_id;
+            output.response.status = data2[0].response_status;
         }
         
         return callback(false, 'Get requests successful', output);
@@ -130,12 +131,12 @@ RequestModel.prototype.getRequestByRequestId = function(_requestId, _shipperId, 
     };
 
     this.db.tx(function (t) {
-        var values = [_requestId,_shipperId];
+        var values = [_requestId, _shipperId];
         var q1 = this.one('SELECT request.id AS request_id, request.longitude AS request_longitude, request.latitude AS request_latitude, request.status AS request_status, request.*, request.phone_number AS request_phone_number, store.phone_number AS store_phone_number, location.*, store.* ' 
                             + 'FROM request, store, location '
                             + 'WHERE request.id = $1 AND request.store_id = store.id '
                             + 'AND store.location_id = location.id ', values[0]);
-        var q2 = this.one('SELECT response.id AS response_id, response.status AS response_status, response.* '
+        var q2 = this.any('SELECT response.id AS response_id, response.status AS response_status, response.* '
                             + 'FROM response '
                             + 'WHERE response.request_id = $1 '
                             + 'AND response.shipper_id = $2 ' , values);
@@ -144,10 +145,6 @@ RequestModel.prototype.getRequestByRequestId = function(_requestId, _shipperId, 
     })
     .then(getRequestSuccessful)
     .catch(getRequestFailed);
-
-    // this.db.one(query, values)
-    //     .then(getRequestSuccessful)
-    //     .catch(getRequestFailed);
 };
 
 // >>>>>>>>>>>>>> Change status of request, rating shipper and store <<<<<<<<<<<<<<<<<<<<<
@@ -168,7 +165,6 @@ RequestModel.prototype.requireConfirmRequest = function(_input, callback) {
     if(_input.rate != 0){
         this.db.tx(function (t) {
             var newRating  = (_input.rating * _input.vote + _input.newRate)/(_input.vote + 1);
-            console.log(_input.rating * _input.vote);
             var values_1 = [_input.requestId];
             var values_2 = [newRating, _input.storeId];
             var q1 = this.one('UPDATE request SET status = 3 WHERE id = $1 ' + 'RETURNING *', values_1);
@@ -181,15 +177,10 @@ RequestModel.prototype.requireConfirmRequest = function(_input, callback) {
     }else{
         var queryString = 'UPDATE request SET status = 3 WHERE id = $1 ' + 'RETURNING *';
         var values = [_input.requestId];
-
         this.db.one(queryString, values)
         .then(requireConfirmRequestSuccessful)
         .catch(requireConfirmRequestError);
     }
-
-    // this.db.one(queryString, values)
-    //     .then(requireConfirmRequestSuccessful)
-    //     .catch(requireConfirmRequestError);
 };
 
 RequestModel.prototype.confirmCompletedRequest = function(_requestId, callback) {
