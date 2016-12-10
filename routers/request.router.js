@@ -7,9 +7,12 @@ router.post('/requests', requestController.createRequest);
 router.get('/requests/store/:storeId', requestController.getRequestByIdStore);
 router.get('/requests/store/:storeId/:status', requestController.getRequestByIdStoreAndStatus);
 
+// get full information of a request
+router.get('/requests/request/:requestId/:shipperId', requestController.getRequestByRequestId);
+
 // update request status
-router.get('/requests/confirm/:requestId', requestController.requireConfirmRequest);
-router.get('/requests/confirmed/:requestId', requestController.confirmCompletedRequest);
+router.put('/requests/confirm/:requestId', requestController.requireConfirmRequest);
+router.put('/requests/confirmed/:requestId', requestController.confirmCompletedRequest);
 
 
 // load 4 tabs for shipper's home

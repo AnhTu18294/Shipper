@@ -53,14 +53,39 @@ module.exports.getRequestByIdStoreAndStatus = function(req, res){
 	})
 };
 
+
+module.exports.getRequestByRequestId = function(req, res){
+	var db = req.app.get('db');
+	var requestModel = modelFactory.createRequestModel(db);
+
+	var requestId = req.params.requestId;
+	var shipperId = req.params.shipperId;
+	
+	requestModel.getRequestByRequestId(requestId, shipperId, function(err, message, data){
+		res.json({err: err, message: message, data: data});
+	})
+};
+
 // update status for request
 
 module.exports.requireConfirmRequest = function(req, res){
 	var db = req.app.get('db');
 	var requestModel = modelFactory.createRequestModel(db);
 	var requestId = req.params.requestId;
+	var storeId = req.body.store_id;
+	var rating = req.body.rating;
+	var vote = req.body.vote;
+	var newRate = req.body.newRate;
 
-	requestModel.requireConfirmRequest(requestId, function(err, message, data){
+	var input = {
+		requestId: requestId,
+		storeId: storeId,
+		rating: rating,
+		vote: vote,
+		newRate: newRate
+	}
+
+	requestModel.requireConfirmRequest(input, function(err, message, data){
 		res.json({err: err, message: message, data: data});
 	})
 }

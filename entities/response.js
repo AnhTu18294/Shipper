@@ -14,6 +14,6 @@ module.exports = Response;
 /*
 status: 
 0: Shipper tao response cho 1 request, dang cho phan hoi: waiting
-1: Shipper nhan dc accept tu store : accepted
-2: Shipper bi huy hoac yeu cau huy reponse: canceled
+1: Shipper bi huy hoac yeu cau huy reponse: canceled
+2: Shipper nhan dc accept tu store : accepted
 */

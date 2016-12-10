@@ -307,7 +307,7 @@ AccountModel.prototype.findByEmail = function(_email, _role, callback) {
     var values = [_email];
     
     var accountFound = function(data) {
-        //console.log(data);
+ 
         return callback(false, 'Founded Account!' ,data);
     };
     var accountNotFound = function(err) {
