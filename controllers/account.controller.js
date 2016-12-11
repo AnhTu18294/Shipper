@@ -115,7 +115,7 @@ module.exports.loginAccount = function(req, res) {
 		password : req.body.password,
 		role : req.body.role
 	};
-
+	console.log(loginInput);
 	accountModel.loginAccount(loginInput , function (err, message, data){
 		output = {err: err, message: message, data};
 		res.send(output);
