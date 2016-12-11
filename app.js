@@ -14,6 +14,13 @@ var pgp = require('pg-promise')(options);
 var db = pgp(postgresConfig);
 
 var app = express();
+var http = require('http').Server(app);
+// config socket
+var SocketIO = require('./socket/socket.io.js');
+SocketIO.initSocket(http);
+SocketIO.configSocket(db);
+
+// config express app
 var session = require('express-session');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
@@ -26,6 +33,6 @@ app.set('db', db);
 
 require('./routers/api.js')(app);
 
-app.listen(app.get('port'), function() {
+http.listen(app.get('port'), function() {
     console.log("server started on http://localhost:" + app.get('port') + ";\n please press Ctrl+C to terminate");
 });

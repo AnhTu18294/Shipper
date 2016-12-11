@@ -2,6 +2,14 @@
 
 var NOT_SEEN = 0;
 var SEEN = 1;
+// code 
+var SHIPPER_APPLY_REQUEST = 1;
+var SHIPPER_REQUIRE_CONFIRM_REQUEST_COMPELETED = 2;
+var SHIPPER_CANCEL_ACCEPTED_REPSPONSE =3;
+var STORE_ACCEPT_SHIPPER = 4;
+var STORE_CONFIRM_REQUEST_COMPELETED = 5;
+var STORE_CANCEL_ACCEPTED_REQUEST =6;
+var STORE_ACCEPT_ANOTHER_SHIPPER = 7;
 
 var Notification = function(){
 	this.id = undefined;
@@ -19,6 +27,8 @@ var Notification = function(){
 };
 
 module.exports = Notification;
+
+
 
 /*
 status:{
