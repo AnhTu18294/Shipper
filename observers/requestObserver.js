@@ -17,4 +17,9 @@ RequestObserver.on('store-confirm-request', function(data){
 	console.log(data);
 });
 
+RequestObserver.on('store-cancel-request', function(data){
+	console.log('store has just cancel a request');
+	console.log(data);
+});
+
 module.exports = RequestObserver;

@@ -167,3 +167,23 @@ module.exports.checkResetCodeAndUpdatePassword = function(req, res){
 	});
 }
 
+module.exports.getShipper = function(req, res){
+	var db = req.app.get('db');
+	var accountModel = modelFactory.createAccountModel(db);
+	var shipperId = req.params.shipperId;
+
+	accountModel.getShipper(shipperId, function(err, message, data){
+		res.json({err: err, message: message, data: data});
+	});
+}
+
+module.exports.getStore = function(req, res){
+	var db = req.app.get('db');
+	var accountModel = modelFactory.createAccountModel(db);
+	var storeId = req.params.storeId;
+
+	accountModel.getStore(storeId, function(err, message, data){
+		res.json({err: err, message: message, data: data});
+	});
+}
+

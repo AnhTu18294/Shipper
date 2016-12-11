@@ -9,4 +9,8 @@ router.post('/accounts/active', accountController.activeAccount);
 router.post('/accounts/requireResetPassword', accountController.requireResetPassword);
 router.post('/accounts/checkResetCodeAndUpdatePassword', accountController.checkResetCodeAndUpdatePassword);
 // router.post('/accounts/updatePassword', accountController.updatePassword);
+
+router.get('/accounts/shipper/:shipperId', accountController.getShipper);
+router.get('/accounts/store/:storeId', accountController.getStore);
+
 module.exports = router;

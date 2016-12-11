@@ -9,6 +9,8 @@ router.post('/requests/create', requestController.createRequest);
 // get request by store
 //router.get('/requests/store/:storeId', requestController.getRequestByIdStore);
 //router.get('/requests/store/:storeId/:status', requestController.getRequestByIdStoreAndStatus);
+// CANCEL REQUEST BY STORE
+router.put('/requests/cancel/:requestId', requestController.cancelRequestByStore);
 
 // get full information of a request
 router.get('/requests/request/:requestId/:shipperId', requestController.getRequestByRequestId);
@@ -29,5 +31,7 @@ router.get('/requests/store/waiting/:storeId', requestController.getWaitingReque
 router.get('/requests/store/processing/:storeId', requestController.getProcessingRequestsByStore);
 router.get('/requests/store/completed/:storeId', requestController.getCompletedRequestsByStore);
 
+// load specific item in tab for store 
 
+router.get('/requests/store/specific-item/:requestId/:type', requestController.getRequestAndListShipper);
 module.exports = router;

@@ -397,4 +397,137 @@ RequestModel.prototype.getCompletedRequestsByStore = function(_storeId, _quantit
         .catch(getCompletedRequestsError);
 }
 
+// >>>>>>>>>>>>
+
+RequestModel.prototype.getRequestAndListShipper = function(_requestId, _type, callback){
+
+    var getRequestAndListShipperError = function(err) {
+        console.log(err);
+        return callback(true, 'get Request And ListShipper Applied Error', null);
+    };
+
+    var getRequestAndListShipperSuccessful = function(data) {
+        var data1 = data[0];
+        var data2 = data[1];
+        console.log(data2);
+        var output = {
+            request: {
+                id: data1.request_id,
+                deposit: data1.deposit,
+                distance: data1.distance,
+                start_time: data1.start_time,
+                end_time: data1.end_time,
+                destination: data1.destination,
+                price: data1.price,
+                product_name: data1.product_name,
+                phone_number: data1.request_phone_number,
+                customer_name: data1.customer_name,
+                address: data1.address,
+                rating: data1.rating,
+                vote: data1.vote,
+                avatar: data1.avatar,
+                longitude: data1.request_longitude,
+                latitude: data1.request_latitude,
+                status: data1.request_status
+            },
+            store: {
+                id: data1.store_id,
+                phone_number: data1.store_phone_number,
+                name: data1.name,
+                store_type: data1.store_type,
+            },
+            location: {
+                id: data1.location_id,
+                longitude: data1.longitude,
+                latitude: data1.latitude,
+                country: data1.country,
+                city: data1.city,
+                district: data1.district,
+                street: data1.street,
+            },
+            shipper:[]
+        }
+
+        if(data2.length > 0){
+            data2.forEach(function(item) {
+                output.shipper.push(item);
+            });
+        }
+        return callback(false, 'get Request And ListShipper Applied Successful', output);
+    };
+
+    var values_1 = [_requestId];
+    var values_2 = [_requestId, _type];
+
+    this.db.tx(function (t) {
+    var values = [_requestId, _type];
+        var q1 = this.one('SELECT request.id AS request_id, request.longitude AS request_longitude, request.latitude AS request_latitude, request.status AS request_status, request.*, request.phone_number AS request_phone_number, store.phone_number AS store_phone_number, location.*, store.* ' 
+                            + 'FROM request, store, location '
+                            + 'WHERE request.id = $1 AND request.store_id = store.id '
+                            + 'AND store.location_id = location.id ', values_1);
+        var q2 = this.any('SELECT shipper.id, shipper.avatar, shipper.name '
+                            + 'FROM shipper '
+                            + 'WHERE shipper.id '
+                            + 'IN ( SELECT shipper_id FROM response WHERE request_id = $1 AND status = $2) ', values_2);
+
+        return this.batch([q1, q2]); 
+    })
+    .then(getRequestAndListShipperSuccessful)
+    .catch(getRequestAndListShipperError);
+
+}
+
+RequestModel.prototype.cancelRequestByStore = function(_requestId, _storeId, callback){
+    var self = this;
+
+    var getStatusFailed = function(err) {
+        console.log(err);
+        return callback(true, 'There was some errors, CANNOT get status of request!', err);
+    };
+
+    var next = function(data){
+
+        var cancelRequestSuccessful = function(data) {
+            RequestObserver.emit('store-cancel-request',data);
+            return callback(false, 'Cancel request successful!', data);
+        };
+
+        var cancelRequestUnsuccesful = function(err) {
+            console.log(err);
+            return callback(true, 'There was some errors, CANNOT cancel request!', err);
+        };
+
+        if (data.status == 0){
+            var query = 'UPDATE request SET status = 5 WHERE id = $1 RETURNING *';
+            var values_1 = [_requestId];
+
+            self.db.one(query,values_1)
+            .then(cancelRequestSuccessful)
+            .catch(cancelRequestUnsuccesful);
+
+        }else if(data.status == 1){
+            console.log("alo");
+            self.db.tx(function (t) {
+                var values_1 = [_requestId];
+                var values_2 = [_storeId];
+                var q1 = t.one('UPDATE request SET status = 5 WHERE id = $1 RETURNING *', values_1);
+                var q2 = t.one('UPDATE store SET rating = (rating * vote + 1)/(vote + 1), vote = vote + 1  WHERE id = $1 RETURNING *', values_2);
+              
+                return t.batch([q1, q2]); 
+            })
+            .then(cancelRequestSuccessful)
+            .catch(cancelRequestUnsuccesful);
+        }else{
+            return callback(true, 'This request has done or is working!', null);
+        }
+    }
+
+    var query = 'SELECT status FROM request WHERE id = $1 ';
+    var values = [_requestId];
+
+    this.db.one(query,values)
+    .then(next)
+    .catch(getStatusFailed);
+}
+
 module.exports = RequestModel;

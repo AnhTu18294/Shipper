@@ -385,4 +385,50 @@ AccountModel.prototype.findById = function(_id, callback) {
         .catch(accountNotFound);
 };
 
+AccountModel.prototype.getShipper = function(_shipperId, callback) {
+
+    var queryString = 'SELECT shipper.* FROM shipper WHERE id = $1 ';
+    var values = [_shipperId];
+
+    var getShipperSuccessful = function(data) {
+        delete data.password;
+        delete data.salt;
+        delete data.reset_code;
+        delete data.active_code;
+        delete data.created_time;
+        delete data.updated_time;
+        return callback(false, data);
+    };
+
+    var getShipperError = function(err) {
+        return callback(true, err);
+    };
+
+    this.db.one(queryString, values)
+        .then(getShipperSuccessful)
+        .catch(getShipperError);
+};
+
+AccountModel.prototype.getStore = function(_storeId, callback) {
+    var queryString = 'SELECT store.*,location.id AS location_id, location.street, location.city, location.district, location.country, location.longitude, location.latitude FROM store, location WHERE store.id = $1 AND location.id = store.location_id' ;
+    var values = [_storeId];
+
+    var getStoreSuccessful = function(data) {
+        delete data.password;
+        delete data.salt;
+        delete data.reset_code;
+        delete data.active_code;
+        delete data.created_time;
+        delete data.updated_time;
+        return callback(false, data);
+    };
+
+    var getStoreError = function(err) {
+        return callback(true, err);
+    };
+
+    this.db.one(queryString, values)
+        .then(getStoreSuccessful)
+        .catch(getStoreError);
+};
 module.exports = AccountModel;

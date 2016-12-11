@@ -182,3 +182,29 @@ module.exports.getCompletedRequestsByStore =function(req, res) {
 		res.json({err:err, message: message, data: data});
 	});
 }
+
+// >>>>>>>>>>>>>>>>>>>>>>>> get Request information and list shipper of request <<<<<<<<<<<<<<<<<<<<<<<<<
+
+module.exports.getRequestAndListShipper = function(req, res){
+	var db = req.app.get('db');
+	var requestModel = modelFactory.createRequestModel(db);
+	var requestId = req.params.requestId;
+	var type = req.params.type;
+
+	requestModel.getRequestAndListShipper(requestId, type, function(err, message, data){
+		res.json({err:err, message: message, data: data});
+	});
+}
+
+// >>>>>>>>>>>>>>>>>>>>>>>> STORE CANCEL REQUEST <<<<<<<<<<<<<<<<<<<<<<<<<
+
+module.exports.cancelRequestByStore = function(req, res){
+	var db = req.app.get('db');
+	var requestModel = modelFactory.createRequestModel(db);
+	var requestId = req.params.requestId;
+	var storeId = req.body.store_id;
+
+	requestModel.cancelRequestByStore(requestId, storeId, function(err, message, data){
+		res.json({err:err, message: message, data: data});
+	});
+}
