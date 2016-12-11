@@ -1,7 +1,6 @@
 var express = require('express');
 var app = express()
 var http = require('http').Server(app);
-var io = require('socket.io')(http);
 
 var config = require('../../configs/config.js');
 
@@ -18,8 +17,9 @@ var pgp = require('pg-promise')(options);
 var cn  = config.postgresql;
 var db = pgp(cn);
 
-
-
+var SocketIO = require('./socket.io.js');
+SocketIO.initSocket(http);
+SocketIO.configSocket(db);
 
 
 app.set('port', process.env.PORT || 8000);

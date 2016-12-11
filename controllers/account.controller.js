@@ -47,8 +47,8 @@ module.exports.createAccount = function(req, res){
 			account.updatedTIme = new Date();
 			// if request contains an image
 			if((req.body.imageExtension != undefined) &&(req.body.imageBase64String != undefined)){
-				account.imageExtension = req.body.imageExtension;
-				account.imageBase64String = req.body.imageBase64String;
+				account.imageExtension = req.body.image_extension;
+				account.imageBase64String = req.body.image_base64string;
 			}
 			
 			accountModel.createShipperAccount(account, function(_err, _message, _data){

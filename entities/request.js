@@ -5,6 +5,7 @@ var RESPONSED = 1;
 var DOING = 2;
 var WAITTING_CONFIRM = 3;
 var COMPLETED = 4;
+var CANCELED = 5;
 
 var Request = function(){
 	this.id = undefined;
@@ -34,6 +35,7 @@ module.exports = Request;
 2: da accept mot shipper cho nhiem vu : doing
 3: nhiem vu hoan thanh, shipper gui phan hoi cho store confirm: 
 4: store confirm nhiem vu da hoan thanh : compeleted
+5: bi huy
 */
 
 /*

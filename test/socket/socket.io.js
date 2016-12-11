@@ -1,14 +1,24 @@
 'use strict'
 var SocketModel = require('../../models/socket.model.js');
+var io = undefined;
+var SHIPPER = 1;
+var STORE = 2
+module.exports.initSocket = function(http){
+	io = require('socket.io')(http);
+};
 
-module.exports.configSocket = function(http, db) {
+module.exports.getSocketIO = function(){
+	return io;
+};
+
+module.exports.configSocket = function(db) {
     var socketModel = new SocketModel(db);
-
     // Listen connection
     io.on('connection', function(socket) {
         var userId = socket.handshake.query.user_id;
         var role = socket.handshake.query.role;
         var socketId = socket.id;
+        console.log(socket.handshake.query);
         socketModel.insertConnectedSocket(userId, role, socketId, function(err, message, data) {
             console.log(message);
         });
@@ -19,13 +29,11 @@ module.exports.configSocket = function(http, db) {
             })
         });
 
-        socket.on('send-text', function(data) {
-            socketModel.getConnectedSocketIdByUserId(data, 1, function(err, message, _data) {
-                console.log('---------');
-                console.log(_data);
-                io.sockets.sockets[_data.socket_id].emit('reply-text', 'ahihi');
-            })
-        });
+        if(role == SHIPPER){
+            require('./socket.shipper.js')(socket, db);
+        }else{
+            require('./socket.store.js')(socket, db);
+        };
 
     });
 }
