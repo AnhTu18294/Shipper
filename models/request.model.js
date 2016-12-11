@@ -65,7 +65,7 @@ RequestModel.prototype.getRequestByIdStoreAndStatus = function(_storeId, _status
         .then(selectRequestSuccessful)
         .catch(selectRequestFailed);
 };
-// >>>>>>>>>>>>>> Get Full Information of Request <<<<<<<<<<<<<<<
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>> Get Full Information of Request <<<<<<<<<<<<<<<
 
 RequestModel.prototype.getRequestByRequestId = function(_requestId, _shipperId, callback){
     var getRequestSuccessful = function(data) {
@@ -150,8 +150,6 @@ RequestModel.prototype.getRequestByRequestId = function(_requestId, _shipperId, 
 // >>>>>>>>>>>>>> Change status of request, rating shipper and store <<<<<<<<<<<<<<<<<<<<<
 
 RequestModel.prototype.requireConfirmRequest = function(_input, callback) {
-    
-    //var queryString = 'UPDATE request SET status = 3 WHERE id = $1 ' + 'RETURNING *';
 
     var requireConfirmRequestError = function(err) {
         console.log(err);
@@ -165,11 +163,10 @@ RequestModel.prototype.requireConfirmRequest = function(_input, callback) {
 
     if(_input.newRate != 0){
         this.db.tx(function (t) {
-            var newRating  = (_input.rating * _input.vote + _input.newRate)/(_input.vote + 1);
             var values_1 = [_input.requestId];
-            var values_2 = [newRating, _input.storeId];
+            var values_2 = [_input.newRate, _input.storeId];
             var q1 = this.one('UPDATE request SET status = 3 WHERE id = $1 ' + 'RETURNING *', values_1);
-            var q2 = this.one('UPDATE store SET rating = $1, vote = vote + 1  WHERE id = $2 RETURNING *', values_2);
+            var q2 = this.one('UPDATE store SET rating = (rating * vote + $1)/(vote + 1), vote = vote + 1  WHERE id = $2 RETURNING *', values_2);
           
             return this.batch([q1, q2]); 
         })
@@ -198,11 +195,10 @@ RequestModel.prototype.confirmCompletedRequest = function(_input, callback) {
 
     if(_input.newRate != 0){
         this.db.tx(function (t) {
-            var newRating  = (_input.rating * _input.vote + _input.newRate)/(_input.vote + 1);
             var values_1 = [_input.requestId];
-            var values_2 = [newRating, _input.shipperId];
+            var values_2 = [_input.newRate, _input.shipperId];
             var q1 = this.one('UPDATE request SET status = 4 WHERE id = $1 ' + 'RETURNING *', values_1);
-            var q2 = this.one('UPDATE shipper SET rating = $1, vote = vote + 1  WHERE id = $2 RETURNING *', values_2);
+            var q2 = this.one('UPDATE shipper SET rating = (rating * vote + $1)/(vote + 1), vote = vote + 1  WHERE id = $2 RETURNING *', values_2);
           
             return this.batch([q1, q2]); 
         })
