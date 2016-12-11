@@ -7,6 +7,23 @@ var NotificationModel = function(_db) {
 NotificationModel.prototype.getNotificationsByUserId = function(_userId, _role, callback){
 	var query = 'SELECT * FROM notification WHERE receiver_id = $1 AND receiver_role = $2';
 	var values = [_userId, _role];
+	
+	var getNotificationSuccessful = function(data){
+		return callback(false, 'Get notifications done!', data);
+	};
+
+	var getNotificationFailed = function(err){
+		console.log(err);
+		return callback(true, 'Get notifications failed!', null);
+	};
+	this.db.any(query, values)
+		.then(getNotificationSuccessful)
+		.catch(getNotificationFailed);
+};
+
+NotificationModel.prototype.getNotificationsByUserIdAndStatus = function(_userId, _role, _status, callback){
+	var query = 'SELECT * FROM notification WHERE receiver_id = $1 AND receiver_role = $2 AND status = $3';
+	var values = [_userId, _role, _status];
 
 	var getNotificationSuccessful = function(data){
 		return callback(false, 'Get notifications done!', data);
@@ -16,6 +33,10 @@ NotificationModel.prototype.getNotificationsByUserId = function(_userId, _role, 
 		console.log(err);
 		return callback(true, 'Get notifications failed!', null);
 	};
+
+	this.db.any(query, values)
+		.then(getNotificationSuccessful)
+		.catch(getNotificationFailed);
 };
 
 NotificationModel.prototype.createNotification = function(_notification, callback){
@@ -40,16 +61,16 @@ NotificationModel.prototype.createNotification = function(_notification, callbac
         .catch(createNotificationUnsuccesful);
 };
 
-NotificationModel.prototype.updateNotificationStatus = function(_status, callback){
-	var query = 'UPDATE notification SET status = $1 RETURNING *';
-	var values = [_status];
+NotificationModel.prototype.updateNotificationStatus = function(_status, _id, callback){
+	var query = 'UPDATE notification SET status = $1 WHERE id = $2 RETURNING *';
+	var values = [_status, _id];
 
 	var updateSuccess = function(data){
-		return(false, 'Update notification status Success', data);
+		return callback(false, 'Update notification status Success', data);
 	};
 	var updateFailed = function(err){
 		console.log(err);
-		return (true, 'Update notification status Failed', null);
+		return callback(true, 'Update notification status Failed', null);
 	}
 	this.db.one(query, values)
 		.then(updateSuccess)
