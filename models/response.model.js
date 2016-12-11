@@ -87,12 +87,33 @@ ResponseModel.prototype.acceptResponse = function(_input, callback){
     	var q1 = this.one('UPDATE response SET status = 2 WHERE request_id = $1 AND shipper_id = $2 RETURNING id, request_id, shipper_id, status', values);
     	var q2 = this.any('UPDATE response SET status = 1 WHERE request_id = $1 AND shipper_id <> $2 RETURNING id, request_id, shipper_id, status', values);
         var q3 = this.one('UPDATE request SET status = 2 WHERE id = $1 RETURNING id, status', _input.requestId);
-        var q4 = this.any('SELECT DISTINCT ON(shipper.id) shipper.id, shipper.name FROM shipper, response, request WHERE shipper.id <> $2 AND response.shipper_id = shipper.id AND response.request_id = $1', values);
       
-	    return this.batch([q1, q2, q3, q4]); 
+	    return this.batch([q1, q2, q3]); 
 	})
     .then(acceptResponseSuccessful)
     .catch(acceptResponseUnsuccesful);
+}
+
+
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> LIST SHIPPER TO NOTIFY <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ResponseModel.prototype.getListShipperToNotify = function(_input, callback){
+    var getListShipperToNotifySuccessful = function(data) {
+        return callback(false, 'get List Shipper To Notify Successful', data);
+    };
+
+    var getListShipperToNotifyError = function(err) {
+        console.log(err);
+        return callback(true, 'get List Shipper To Notify Error!', err);
+    };
+
+    var query = 'SELECT DISTINCT ON(shipper.id) shipper.id, shipper.name FROM shipper, response, request '
+                + 'WHERE shipper.id <> $2 AND response.shipper_id = shipper.id AND response.request_id = $1';
+    var values = [_input.requestId,_input.shipperId];
+
+    this.db.any(query, values)
+        .then(getListShipperToNotifySuccessful)
+        .catch(getListShipperToNotifyError);
 }
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CANCEL RESPONSE BY SHIPPER <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

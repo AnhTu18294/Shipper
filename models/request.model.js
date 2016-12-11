@@ -212,16 +212,11 @@ RequestModel.prototype.confirmCompletedRequest = function(_input, callback) {
         .then(confirmCompletedRequestSuccessful)
         .catch(confirmCompletedRequestError);
     }
-
-
-    // this.db.one(queryString, values)
-    //     .then(confirmCompletedRequestSuccessful)
-    //     .catch(confirmCompletedRequestError);
 };
 
 // >>>>>>>>>>>>>>>>>>>>> Get 4 TAB Requests For Shipper <<<<<<<<<<<<<<
 
-RequestModel.prototype.getLastestRequests = function(_shipperId, _quantity, callback){
+RequestModel.prototype.getLastestRequestsByShipper = function(_shipperId, _quantity, callback){
     var query = 'SELECT request.id, request.price, request.destination, request.created_time, request.product_name, store.id AS store_id, store.name, location.id AS location_id, location.country, location.district, location.city, location.street '
                 + 'FROM request, store, location '
                 + 'WHERE (request.status = 0 OR request.status = 1) '
@@ -248,7 +243,7 @@ RequestModel.prototype.getLastestRequests = function(_shipperId, _quantity, call
         .catch(getLastestRequestsError);
 }
 
-RequestModel.prototype.getWaitingRequests = function(_shipperId, _quantity, callback){
+RequestModel.prototype.getWaitingRequestsByShipper = function(_shipperId, _quantity, callback){
     var query = 'SELECT request.id, request.price, request.destination, request.created_time, request.product_name,  store.id AS store_id, store.name, location.id AS location_id, location.country, location.district, location.city, location.street FROM request, response, store, location ' 
                 + 'WHERE (request.status = 0 OR request.status = 1) ' 
                 + 'AND request.id = response.request_id ' 
@@ -274,7 +269,7 @@ RequestModel.prototype.getWaitingRequests = function(_shipperId, _quantity, call
         .catch(getWaitingRequestsError);
 }
 
-RequestModel.prototype.getProcessingRequests = function(_shipperId, _quantity, callback){
+RequestModel.prototype.getProcessingRequestsByShipper = function(_shipperId, _quantity, callback){
     var query = 'SELECT request.id, request.price, request.destination, request.status, request.created_time, request.product_name,  store.id AS store_id, store.name, location.id AS location_id, location.country, location.district, location.city, location.street FROM request, response, store, location ' 
                 + 'WHERE (request.status = 2 OR request.status = 3) ' 
                 + 'AND request.id = response.request_id ' 
@@ -300,7 +295,7 @@ RequestModel.prototype.getProcessingRequests = function(_shipperId, _quantity, c
         .catch(getProcessingRequestsError);
 }
 
-RequestModel.prototype.getCompletedRequests = function(_shipperId, _quantity, callback){
+RequestModel.prototype.getCompletedRequestsByShipper = function(_shipperId, _quantity, callback){
     var query = 'SELECT request.id, request.price, request.destination, request.status, request.created_time, request.product_name,  store.id AS store_id, store.name, location.id AS location_id, location.country, location.district, location.city, location.street FROM request, response, store, location ' 
                 + 'WHERE request.status = 4 ' 
                 + 'AND request.id = response.request_id ' 
@@ -315,6 +310,82 @@ RequestModel.prototype.getCompletedRequests = function(_shipperId, _quantity, ca
     var getCompletedRequestsError = function(err) {
         console.log(err);
         return callback(true, 'CANNOT get Completed requests for shipper', null);
+    };
+
+    var getCompletedRequestsSuccessful = function(data) {
+        return callback(false, 'Get Completed requests successful', data);
+    };
+
+    this.db.any(query, values)
+        .then(getCompletedRequestsSuccessful)
+        .catch(getCompletedRequestsError);
+}
+
+
+// load 3 tabs for store's home
+
+RequestModel.prototype.getWaitingRequestsByStore = function(_storeId, _quantity, callback){
+    var query = 'SELECT request.id, request.price, request.destination, request.status, request.created_time, request.product_name, request.customer_name, request.deposit, store.id AS store_id, store.name, location.id AS location_id, location.country, location.district, location.city, location.street FROM request, store, location ' 
+                + 'WHERE (request.status = 0 OR request.status = 1) ' 
+                + 'AND request.store_id = $1 ' 
+                + 'AND request.store_id = store.id '
+                + 'AND store.location_id = location.id ' 
+                + 'ORDER BY request.id DESC '
+                + 'LIMIT $2';
+    var values = [_storeId, _quantity];
+
+    var getWaitingRequestsError = function(err) {
+        console.log(err);
+        return callback(true, 'CANNOT get Waiting requests for store', null);
+    };
+
+    var getWaitingRequestsSuccessful = function(data) {
+        console.log(data);
+        return callback(false, 'Get Waiting requests successful', data);
+    };
+
+    this.db.any(query, values)
+        .then(getWaitingRequestsSuccessful)
+        .catch(getWaitingRequestsError);
+}
+
+RequestModel.prototype.getProcessingRequestsByStore = function(_storeId, _quantity, callback){
+    var query = 'SELECT request.id, request.price, request.destination, request.status, request.created_time, request.product_name, request.customer_name, request.deposit,  store.id AS store_id, store.name, location.id AS location_id, location.country, location.district, location.city, location.street FROM request, store, location ' 
+                + 'WHERE (request.status = 2 OR request.status = 3) ' 
+                + 'AND request.store_id = $1 ' 
+                + 'AND request.store_id = store.id '
+                + 'AND store.location_id = location.id ' 
+                + 'ORDER BY request.id DESC ' 
+                + 'LIMIT $2';
+    var values = [_storeId, _quantity];
+
+    var getProcessingRequestsError = function(err) {
+        console.log(err);
+        return callback(true, 'CANNOT get Processing requests for store', null);
+    };
+
+    var getProcessingRequestsSuccessful = function(data) {
+        return callback(false, 'Get Processing requests successful', data);
+    };
+
+    this.db.any(query, values)
+        .then(getProcessingRequestsSuccessful)
+        .catch(getProcessingRequestsError);
+}
+
+RequestModel.prototype.getCompletedRequestsByStore = function(_storeId, _quantity, callback){
+    var query = 'SELECT request.id, request.price, request.destination, request.status, request.created_time, request.product_name, request.customer_name, request.deposit, store.id AS store_id, store.name, location.id AS location_id, location.country, location.district, location.city, location.street FROM request, response, store, location ' 
+                + 'WHERE request.status = 4 ' 
+                + 'AND request.store_id = $1 '
+                + 'AND request.store_id = store.id '
+                + 'AND store.location_id = location.id ' 
+                + 'ORDER BY request.id DESC '
+                + 'LIMIT $2';
+    var values = [_storeId, _quantity];
+
+    var getCompletedRequestsError = function(err) {
+        console.log(err);
+        return callback(true, 'CANNOT get Completed requests for store', null);
     };
 
     var getCompletedRequestsSuccessful = function(data) {

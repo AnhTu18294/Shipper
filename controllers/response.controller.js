@@ -41,6 +41,8 @@ module.exports.getResponsesByShipperId = function(req, res) {
 	});
 }
 
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
+
 module.exports.acceptResponse =  function(req, res) {
 	var db = req.app.get('db');
 	var responseModel = modelFactory.createResponseModel(db);
@@ -51,6 +53,20 @@ module.exports.acceptResponse =  function(req, res) {
 	}
 
 	responseModel.acceptResponse(input, function(err, message, data) {
+		res.json({err: err, message: message, data: data});
+	});
+}
+
+module.exports.getListShipperToNotify = function(req, res){
+	var db = req.app.get('db');
+	var responseModel = modelFactory.createResponseModel(db);
+
+	var input = {
+		requestId :req.body.request_id,
+		shipperId : req.body.shipper_id
+	}
+
+	responseModel.getListShipperToNotify(input, function(err, message, data) {
 		res.json({err: err, message: message, data: data});
 	});
 }
