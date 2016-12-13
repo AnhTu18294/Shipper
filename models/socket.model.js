@@ -2,6 +2,7 @@
 
 // 1: connected
 // 2: disconnected
+var SocketIO = require('../socket/socket.io.js');
 
 var SocketModel = function(_db) {
     this.db = _db;
@@ -25,9 +26,9 @@ SocketModel.prototype.getConnectedSocketIdByUserId = function(_userId, _role, ca
 
 SocketModel.prototype.insertConnectedSocket = function(_userId, _role, _socketId, callback) {
     var self = this;
-    var values1 = [_userId];
+    var values1 = [_userId, _role];
     var values2 = [_userId, _role, _socketId, 1];
-    var queryString1 = 'DELETE FROM socket WHERE user_id = $1';
+    var queryString1 = 'DELETE FROM socket WHERE user_id = $1 AND role = $2 RETURNING socket_id';
     var queryString2 = 'INSERT INTO socket(user_id, role, socket_id, status) VALUES($1, $2, $3, $4) RETURNING *';
 
     var deleteSuccess = function() {
@@ -48,10 +49,9 @@ SocketModel.prototype.insertConnectedSocket = function(_userId, _role, _socketId
         return callback(true, 'delete failed', null);
     };
 
-    this.db.none(queryString1, values1)
+    this.db.any(queryString1, values1)
         .then(deleteSuccess)
         .catch(deleteFailed);
-
 
 };
 

@@ -19,6 +19,7 @@ module.exports.configSocket = function(db) {
         var role = socket.handshake.query.role;
         var socketId = socket.id;
         console.log(socket.handshake.query);
+        console.log(io.sockets.sockets);
         socketModel.insertConnectedSocket(userId, role, socketId, function(err, message, data) {
             console.log(message);
         });
