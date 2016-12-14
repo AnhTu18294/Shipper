@@ -13,4 +13,6 @@ router.post('/accounts/checkResetCodeAndUpdatePassword', accountController.check
 router.get('/accounts/shipper/:shipperId', accountController.getShipper);
 router.get('/accounts/store/:storeId', accountController.getStore);
 
+
+router.put('/accounts/updateProfile', accountController.updateProfile);
 module.exports = router;
