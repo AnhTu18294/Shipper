@@ -5,7 +5,7 @@ var NotificationModel = function(_db) {
 };
 
 NotificationModel.prototype.getNotificationsByUserId = function(_userId, _role, callback){
-	var query = 'SELECT * FROM notification WHERE receiver_id = $1 AND receiver_role = $2';
+	var query = 'SELECT * FROM notification WHERE receiver_id = $1 AND receiver_role = $2 ORDER BY updated_time DESC';
 	var values = [_userId, _role];
 	
 	var getNotificationSuccessful = function(data){
@@ -22,7 +22,7 @@ NotificationModel.prototype.getNotificationsByUserId = function(_userId, _role, 
 };
 
 NotificationModel.prototype.getNotificationsByUserIdAndStatus = function(_userId, _role, _status, callback){
-	var query = 'SELECT * FROM notification WHERE receiver_id = $1 AND receiver_role = $2 AND status = $3';
+	var query = 'SELECT * FROM notification WHERE receiver_id = $1 AND receiver_role = $2 AND status = $3 ORDER BY updated_time DESC';
 	var values = [_userId, _role, _status];
 
 	var getNotificationSuccessful = function(data){
@@ -62,8 +62,9 @@ NotificationModel.prototype.createNotification = function(_notification, callbac
 };
 
 NotificationModel.prototype.updateNotificationStatus = function(_status, _id, callback){
-	var query = 'UPDATE notification SET status = $1 WHERE id = $2 RETURNING *';
-	var values = [_status, _id];
+	var query = 'UPDATE notification SET status = $1, updated_time = $2  WHERE id = $3 RETURNING *';
+	var updatedTime = new Date();
+	var values = [_status, updatedTime, _id];
 
 	var updateSuccess = function(data){
 		return callback(false, 'Update notification status Success', data);
