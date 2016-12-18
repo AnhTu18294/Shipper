@@ -31,7 +31,13 @@ SocketModel.prototype.insertConnectedSocket = function(_userId, _role, _socketId
     var queryString1 = 'DELETE FROM socket WHERE user_id = $1 AND role = $2 RETURNING socket_id';
     var queryString2 = 'INSERT INTO socket(user_id, role, socket_id, status) VALUES($1, $2, $3, $4) RETURNING *';
 
-    var deleteSuccess = function() {
+    var deleteSuccess = function(data) {
+        if(data != null){
+            var sockets = SocketIO.getSocketIO().sockets.sockets;
+            for(var i = 0, len = data.len; i < len; i++){
+                sockets[i].emit('forced-to-disconnecte',null);
+            }
+        }
         var insertSuccess = function(data) {
             return callback(false, 'delete success and insert success!', data);
         };
