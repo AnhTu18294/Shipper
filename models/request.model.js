@@ -374,7 +374,7 @@ RequestModel.prototype.getProcessingRequestsByStore = function(_storeId, _quanti
 }
 
 RequestModel.prototype.getCompletedRequestsByStore = function(_storeId, _quantity, callback){
-    var query = 'SELECT request.id, request.price, request.destination, request.status, request.created_time, request.product_name, request.customer_name, request.deposit, store.id AS store_id, store.name, location.id AS location_id, location.country, location.district, location.city, location.street FROM request, response, store, location ' 
+    var query = 'SELECT DISTINCT ON(request.id) request.id, request.price, request.destination, request.status, request.created_time, request.product_name, request.customer_name, request.deposit, store.id AS store_id, store.name, location.id AS location_id, location.country, location.district, location.city, location.street FROM request, response, store, location ' 
                 + 'WHERE request.status = 4 ' 
                 + 'AND request.store_id = $1 '
                 + 'AND request.store_id = store.id '

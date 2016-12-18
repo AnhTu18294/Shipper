@@ -187,3 +187,27 @@ module.exports.getStore = function(req, res){
 	});
 }
 
+module.exports.updateProfile = function(req, res){
+	var db = req.app.get('db');
+	var accountModel = modelFactory.createAccountModel(db);
+
+	var input = {
+		role: req.body.role,
+		idAccount: req.body.account_id,
+		name: req.body.name,
+		phoneNumber: req.body.phone_number,
+		address: req.body.address,
+		birthday: req.body.birthday,
+		storeType: req.body.store_type,
+		city: req.body.city,
+		street: req.body.street,
+		country: req.body.country,
+		district: req.body.district
+	}
+
+	accountModel.updateProfile(input, function(err, message, data){
+		res.json({err: err, message: message, data: data});
+	});
+}
+
+

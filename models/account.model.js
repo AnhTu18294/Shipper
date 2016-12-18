@@ -431,4 +431,44 @@ AccountModel.prototype.getStore = function(_storeId, callback) {
         .then(getStoreSuccessful)
         .catch(getStoreError);
 };
+
+AccountModel.prototype.updateProfile = function(_input,callback) {
+    var updateProfileSuccessful = function(data) {
+        return callback(false, 'Update profile successful!' , data);
+    };
+    var updateProfileError = function(err) {
+        return callback(true, 'ERROR, CANNOT update profile!', err);
+    };
+
+    var role = _input.role;
+    var id = _input.idAccount;
+
+    if(role == 1){
+        var values = [_input.name, _input.phoneNumber, _input.address, _input.birthday, id ];
+        var queryString = 'UPDATE shipper SET name = $1, phone_number = $2, address = $3, birthday = $4  WHERE id = $5 '
+                        + 'RETURNING id, email, name, phone_number, address, avatar, birthday, longitude, latitude, rating, vote';
+
+        this.db.one(queryString, values)
+        .then(updateProfileSuccessful)
+        .catch(updateProfileError);
+
+    }else if(role == 2){
+        this.db.tx(function (t) {
+            var values_1 = [_input.name, _input.phoneNumber, _input.storeType, _input.address, id];
+            var values_2 = [_input.city, _input.district, _input.street, _input.country, id];
+            var q1 = this.one('UPDATE store SET name = $1, phone_number = $2, store_type = $3, address = $4 WHERE id = $5 '
+                        + 'RETURNING id, email, name, phone_number, store_type, location_id, address, rating, vote', values_1);
+            var q2 = this.one('UPDATE location SET city = $1, district = $2, street = $3, country = $4 '
+                + 'WHERE id = (SELECT location_id FROM store WHERE store.id = $5) RETURNING city, district, street, country', values_2);
+          
+            return this.batch([q1, q2]); 
+        })
+        .then(updateProfileSuccessful)
+        .catch(updateProfileError);
+                        
+    }else{
+        return callback(true, 'Role ERROR', null);
+    }     
+}
+
 module.exports = AccountModel;
