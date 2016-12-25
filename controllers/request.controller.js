@@ -189,9 +189,8 @@ module.exports.getRequestAndListShipper = function(req, res){
 	var db = req.app.get('db');
 	var requestModel = modelFactory.createRequestModel(db);
 	var requestId = req.params.requestId;
-	var type = req.params.type;
 
-	requestModel.getRequestAndListShipper(requestId, type, function(err, message, data){
+	requestModel.getRequestAndListShipper(requestId, function(err, message, data){
 		res.json({err:err, message: message, data: data});
 	});
 }

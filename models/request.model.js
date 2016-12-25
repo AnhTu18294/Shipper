@@ -224,7 +224,7 @@ RequestModel.prototype.getLastestRequestsByShipper = function(_shipperId, _quant
                 + 'AND store.location_id = location.id '
                 + 'AND request.id '
                 + 'NOT IN(SELECT request_id FROM response WHERE shipper_id = $1)'
-                + 'ORDER BY request.id DESC ' 
+                + 'ORDER BY request.created_time DESC ' 
                 + 'LIMIT $2';
     
     var values = [_shipperId, _quantity];
@@ -251,7 +251,7 @@ RequestModel.prototype.getWaitingRequestsByShipper = function(_shipperId, _quant
                 + 'AND response.status = 0'
                 + 'AND request.store_id = store.id '
                 + 'AND store.location_id = location.id ' 
-                + 'ORDER BY request.id DESC '
+                + 'ORDER BY request.created_time DESC '
                 + 'LIMIT $2';
     var values = [_shipperId, _quantity];
 
@@ -277,7 +277,7 @@ RequestModel.prototype.getProcessingRequestsByShipper = function(_shipperId, _qu
                 + 'AND response.status = 2'
                 + 'AND request.store_id = store.id '
                 + 'AND store.location_id = location.id ' 
-                + 'ORDER BY request.id DESC ' 
+                + 'ORDER BY rrequest.created_time DESC ' 
                 + 'LIMIT $2';
     var values = [_shipperId, _quantity];
 
@@ -303,7 +303,7 @@ RequestModel.prototype.getCompletedRequestsByShipper = function(_shipperId, _qua
                 + 'AND response.status = 2'
                 + 'AND request.store_id = store.id '
                 + 'AND store.location_id = location.id ' 
-                + 'ORDER BY request.id DESC '
+                + 'ORDER BY request.created_time DESC '
                 + 'LIMIT $2';
     var values = [_shipperId, _quantity];
 
@@ -330,7 +330,7 @@ RequestModel.prototype.getWaitingRequestsByStore = function(_storeId, _quantity,
                 + 'AND request.store_id = $1 ' 
                 + 'AND request.store_id = store.id '
                 + 'AND store.location_id = location.id ' 
-                + 'ORDER BY request.id DESC '
+                + 'ORDER BY request.created_time DESC '
                 + 'LIMIT $2';
     var values = [_storeId, _quantity];
 
@@ -355,7 +355,7 @@ RequestModel.prototype.getProcessingRequestsByStore = function(_storeId, _quanti
                 + 'AND request.store_id = $1 ' 
                 + 'AND request.store_id = store.id '
                 + 'AND store.location_id = location.id ' 
-                + 'ORDER BY request.id DESC ' 
+                + 'ORDER BY request.created_time DESC ' 
                 + 'LIMIT $2';
     var values = [_storeId, _quantity];
 
@@ -379,7 +379,7 @@ RequestModel.prototype.getCompletedRequestsByStore = function(_storeId, _quantit
                 + 'AND request.store_id = $1 '
                 + 'AND request.store_id = store.id '
                 + 'AND store.location_id = location.id ' 
-                + 'ORDER BY request.id DESC '
+                + 'ORDER BY request.created_time DESC '
                 + 'LIMIT $2';
     var values = [_storeId, _quantity];
 
@@ -399,81 +399,116 @@ RequestModel.prototype.getCompletedRequestsByStore = function(_storeId, _quantit
 
 // >>>>>>>>>>>>
 
-RequestModel.prototype.getRequestAndListShipper = function(_requestId, _type, callback){
-
-    var getRequestAndListShipperError = function(err) {
+RequestModel.prototype.getRequestAndListShipper = function(_requestId, callback){
+    var self = this;
+    var getStatusFailed = function(err) {
         console.log(err);
-        return callback(true, 'get Request And ListShipper Applied Error', null);
+        return callback(true, 'get Status of Request Failed', null);
     };
 
-    var getRequestAndListShipperSuccessful = function(data) {
-        var data1 = data[0];
-        var data2 = data[1];
-        console.log(data2);
-        var output = {
-            request: {
-                id: data1.request_id,
-                deposit: data1.deposit,
-                distance: data1.distance,
-                start_time: data1.start_time,
-                end_time: data1.end_time,
-                destination: data1.destination,
-                price: data1.price,
-                product_name: data1.product_name,
-                phone_number: data1.request_phone_number,
-                customer_name: data1.customer_name,
-                address: data1.address,
-                rating: data1.rating,
-                vote: data1.vote,
-                avatar: data1.avatar,
-                longitude: data1.request_longitude,
-                latitude: data1.request_latitude,
-                status: data1.request_status
-            },
-            store: {
-                id: data1.store_id,
-                phone_number: data1.store_phone_number,
-                name: data1.name,
-                store_type: data1.store_type,
-            },
-            location: {
-                id: data1.location_id,
-                longitude: data1.longitude,
-                latitude: data1.latitude,
-                country: data1.country,
-                city: data1.city,
-                district: data1.district,
-                street: data1.street,
-            },
-            shipper:[]
+    var values = [_requestId];
+
+    var next = function(data){
+
+        var getRequestAndListShipperError = function(err) {
+            console.log(err);
+            return callback(true, 'get Request And ListShipper Applied Error', err);
+        };
+
+        var getRequestAndListShipperSuccessful = function(data) {
+            var data1 = data[0];
+            var data2 = data[1];
+            console.log(data);
+            var output = {
+                request: {
+                    id: data1.request_id,
+                    deposit: data1.deposit,
+                    distance: data1.distance,
+                    start_time: data1.start_time,
+                    end_time: data1.end_time,
+                    destination: data1.destination,
+                    price: data1.price,
+                    product_name: data1.product_name,
+                    phone_number: data1.request_phone_number,
+                    customer_name: data1.customer_name,
+                    address: data1.address,
+                    rating: data1.rating,
+                    vote: data1.vote,
+                    avatar: data1.avatar,
+                    longitude: data1.request_longitude,
+                    latitude: data1.request_latitude,
+                    status: data1.request_status
+                },
+                store: {
+                    id: data1.store_id,
+                    phone_number: data1.store_phone_number,
+                    name: data1.name,
+                    store_type: data1.store_type,
+                },
+                location: {
+                    id: data1.location_id,
+                    longitude: data1.longitude,
+                    latitude: data1.latitude,
+                    country: data1.country,
+                    city: data1.city,
+                    district: data1.district,
+                    street: data1.street,
+                },
+                shipper:[]
+            }
+
+            if(data2.length > 0){
+                data2.forEach(function(item) {
+                    output.shipper.push(item);
+                });
+            }
+            return callback(false, 'get Request And ListShipper Applied Successful', output);
+        };
+
+        if(data.request_status == 2 || data.request_status == 3 || data.request_status == 4){
+            self.db.tx(function (t) {
+                var q1 = t.one('SELECT request.id AS request_id, request.longitude AS request_longitude, request.latitude AS request_latitude, request.status AS request_status, request.*, request.phone_number AS request_phone_number, store.phone_number AS store_phone_number, location.*, store.* ' 
+                                    + 'FROM request, store, location '
+                                    + 'WHERE request.id = $1 AND request.store_id = store.id '
+                                    + 'AND store.location_id = location.id ', values);
+                var q2 = t.any('SELECT shipper.id, shipper.avatar, shipper.name, shipper.rating '
+                                    + 'FROM shipper '
+                                    + 'WHERE shipper.id '
+                                    + 'IN ( SELECT shipper_id FROM response WHERE request_id = $1 AND status = 2 ORDER BY created_time) ', values);
+
+                return t.batch([q1, q2]); 
+            })
+            .then(getRequestAndListShipperSuccessful)
+            .catch(getRequestAndListShipperError);
+
+        }else if (data.request_status == 1 || data.request_status == 0){
+            self.db.tx(function (t) {
+                var q1 = t.one('SELECT request.id AS request_id, request.longitude AS request_longitude, request.latitude AS request_latitude, request.status AS request_status, request.*, request.phone_number AS request_phone_number, store.phone_number AS store_phone_number, location.*, store.* ' 
+                                    + 'FROM request, store, location '
+                                    + 'WHERE request.id = $1 AND request.store_id = store.id '
+                                    + 'AND store.location_id = location.id ', values);
+                var q2 = t.any('SELECT shipper.id, shipper.avatar, shipper.name, shipper.rating '
+                                    + 'FROM shipper '
+                                    + 'WHERE shipper.id '
+                                    + 'IN ( SELECT shipper_id FROM response WHERE request_id = $1 AND status = 0 ORDER BY created_time) ', values);
+
+                return t.batch([q1, q2]); 
+            })
+            .then(getRequestAndListShipperSuccessful)
+            .catch(getRequestAndListShipperError);
+        }else{
+            return callback(true, 'Request has cancelled !', null);
         }
 
-        if(data2.length > 0){
-            data2.forEach(function(item) {
-                output.shipper.push(item);
-            });
-        }
-        return callback(false, 'get Request And ListShipper Applied Successful', output);
-    };
+    }
 
-    var values_1 = [_requestId];
-    var values_2 = [_requestId, _type];
-
-    this.db.tx(function (t) {
-    var values = [_requestId, _type];
-        var q1 = this.one('SELECT request.id AS request_id, request.longitude AS request_longitude, request.latitude AS request_latitude, request.status AS request_status, request.*, request.phone_number AS request_phone_number, store.phone_number AS store_phone_number, location.*, store.* ' 
-                            + 'FROM request, store, location '
-                            + 'WHERE request.id = $1 AND request.store_id = store.id '
-                            + 'AND store.location_id = location.id ', values_1);
-        var q2 = this.any('SELECT shipper.id, shipper.avatar, shipper.name '
-                            + 'FROM shipper '
-                            + 'WHERE shipper.id '
-                            + 'IN ( SELECT shipper_id FROM response WHERE request_id = $1 AND status = $2) ', values_2);
-
-        return this.batch([q1, q2]); 
-    })
-    .then(getRequestAndListShipperSuccessful)
-    .catch(getRequestAndListShipperError);
+    var query = 'SELECT request.status AS request_status ' 
+                                + 'FROM request, store, location '
+                                + 'WHERE request.id = $1 AND request.store_id = store.id '
+                                + 'AND store.location_id = location.id ';  
+    this.db.one(query,values)
+    .then(next)
+    .catch(getStatusFailed);                            
 
 }
 

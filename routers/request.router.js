@@ -33,5 +33,5 @@ router.get('/requests/store/completed/:storeId', requestController.getCompletedR
 
 // load specific item in tab for store 
 
-router.get('/requests/store/specific-item/:requestId/:type', requestController.getRequestAndListShipper);
+router.get('/requests/store/specific-item/:requestId', requestController.getRequestAndListShipper);
 module.exports = router;

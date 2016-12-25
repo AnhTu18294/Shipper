@@ -7,6 +7,7 @@ var ResponseModel = function(_db) {
 };
 
 ResponseModel.prototype.createResponse = function(_response, callback) {
+    var self = this;
     var createResponseSuccessful = function(data) {
         ResponseObserver.emit('shipper-create-response',data);
         return callback(false, 'Create success a response!', data);
@@ -17,19 +18,43 @@ ResponseModel.prototype.createResponse = function(_response, callback) {
         return callback(true, 'There was some errors, CANNOT create a response!', err);
     };
 
-    this.db.tx(function (t) {
-        var values_1  = [_response.requestId, _response.shipperId, _response.status, _response.createdTime, _response.updatedTime];
-        var values_2  = [_response.requestId];
-        console.log(_response.requestId);
-        var q1 = this.one('INSERT INTO response(request_id, shipper_id, status, created_time, updated_time) '
-                            + 'VALUES ($1, $2, $3, $4, $5) '
-                            + 'RETURNING request_id, shipper_id, status', values_1);
-        var q2 = this.one('UPDATE request SET status = 1 WHERE id = $1 RETURNING *', values_2);
-      
-        return this.batch([q1, q2]); 
-    })
-    .then(createResponseSuccessful)
-    .catch(createResponseUnsuccesful);
+    var RequestNotAvailable = function(err) {
+        console.log(err);
+        return callback(true, 'There was some errors, Request not available!', err);
+    };
+
+    var next = function(data){
+        if(data.request_status == 0){
+            self.db.tx(function (t) {
+                var values_1  = [_response.requestId, _response.shipperId, _response.status, _response.createdTime, _response.updatedTime];
+                var values_2  = [_response.requestId];
+                console.log(_response.requestId);
+                var q1 = t.one('INSERT INTO response(request_id, shipper_id, status, created_time, updated_time) '
+                                    + 'VALUES ($1, $2, $3, $4, $5) '
+                                    + 'RETURNING request_id, shipper_id, status', values_1);
+                var q2 = t.one('UPDATE request SET status = 1 WHERE id = $1 RETURNING *', values_2);
+              
+                return t.batch([q1, q2]); 
+            })
+            .then(createResponseSuccessful)
+            .catch(createResponseUnsuccesful);
+        }else{
+            var values_1  = [_response.requestId, _response.shipperId, _response.status, _response.createdTime, _response.updatedTime];
+            var query = 'INSERT INTO response(request_id, shipper_id, status, created_time, updated_time) '
+                        + 'VALUES ($1, $2, $3, $4, $5) '
+                        + 'RETURNING request_id, shipper_id, status';
+            self.db.one(query, values_1)
+            .then(createResponseSuccessful)
+            .catch(createResponseUnsuccesful);        
+        }
+    }
+
+    var query = 'SELECT status AS request_status FROM request WHERE id = $1';
+    var values = [_response.requestId];
+    this.db.one(query, values)
+        .then(next) 
+        .catch(createResponseUnsuccesful);
+
 }
 
 ResponseModel.prototype.getResponsesByRequestId = function(_requestId, callback) {

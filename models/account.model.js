@@ -150,6 +150,33 @@ AccountModel.prototype.loginAccount = function(_loginInput, callback) {
     });
 }
 
+// ***********************************************************************************
+AccountModel.prototype.findByEmail = function(_email, _role, callback) {
+    var values = [_email];
+    
+    var accountFound = function(data) {
+ 
+        return callback(false, 'Founded Account!' ,data);
+    };
+    var accountNotFound = function(err) {
+        return callback(true, 'Not Found Account!', err);
+    };
+
+    if(_role == 1){
+        var queryString = 'SELECT * FROM shipper WHERE email = $1';
+        this.db.one(queryString, values)
+        .then(accountFound)
+        .catch(accountNotFound);
+    }else if(_role == 2){
+        var queryString = 'SELECT store.*, location.city, location.longitude, location.latitude, location.country, location.district, location.street FROM store, location WHERE store.email = $1 AND store.location_id = location.id';
+        this.db.one(queryString, values)
+        .then(accountFound)
+        .catch(accountNotFound);
+    }else{
+        return callback(true, 'Role Error!', false);
+    }
+};
+
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ACTIVE ACCOUNT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 AccountModel.prototype.activeAccount = function(_role, _idAccount, _activeCode, callback){
     var self = this;
@@ -300,37 +327,6 @@ AccountModel.prototype.checkResetCodeAndUpdatePassword = function(_role, _email,
         .then(resetCodeValid)
         .catch(resetCodeNotValid)
 };
-
-
-// ***********************************************************************************
-AccountModel.prototype.findByEmail = function(_email, _role, callback) {
-    var values = [_email];
-    
-    var accountFound = function(data) {
- 
-        return callback(false, 'Founded Account!' ,data);
-    };
-    var accountNotFound = function(err) {
-        return callback(true, 'Not Found Account!', err);
-    };
-
-    if(_role == 1){
-        var queryString = 'SELECT * FROM shipper WHERE email = $1';
-        this.db.one(queryString, values)
-        .then(accountFound)
-        .catch(accountNotFound);
-    }else if(_role == 2){
-        var queryString = 'SELECT * FROM store WHERE email = $1';
-        this.db.one(queryString, values)
-        .then(accountFound)
-        .catch(accountNotFound);
-    }else{
-        return callback(true, 'Role Error!', false);
-    }
-};
-
-
-
 
 //
 AccountModel.prototype.deleteAnAccount = function(_id, callback) {
