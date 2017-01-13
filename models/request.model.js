@@ -139,7 +139,8 @@ RequestModel.prototype.getRequestByRequestId = function(_requestId, _shipperId, 
         var q2 = this.any('SELECT response.id AS response_id, response.status AS response_status, response.* '
                             + 'FROM response '
                             + 'WHERE response.request_id = $1 '
-                            + 'AND response.shipper_id = $2 ' , values);
+                            + 'AND response.shipper_id = $2 '
+                            + 'ORDER BY response.created_time DESC' , values);
       
         return this.batch([q1, q2]); 
     })
@@ -277,7 +278,7 @@ RequestModel.prototype.getProcessingRequestsByShipper = function(_shipperId, _qu
                 + 'AND response.status = 2'
                 + 'AND request.store_id = store.id '
                 + 'AND store.location_id = location.id ' 
-                + 'ORDER BY rrequest.created_time DESC ' 
+                + 'ORDER BY request.created_time DESC ' 
                 + 'LIMIT $2';
     var values = [_shipperId, _quantity];
 
@@ -415,6 +416,48 @@ RequestModel.prototype.getRequestAndListShipper = function(_requestId, callback)
             return callback(true, 'get Request And ListShipper Applied Error', err);
         };
 
+        var getRequestCanceledSuccessful = function(data) {
+            var output = {
+                request: {
+                    id: data.request_id,
+                    deposit: data.deposit,
+                    distance: data.distance,
+                    start_time: data.start_time,
+                    end_time: data.end_time,
+                    destination: data.destination,
+                    price: data.price,
+                    product_name: data.product_name,
+                    phone_number: data.request_phone_number,
+                    customer_name: data.customer_name,
+                    address: data.address,
+                    rating: data.rating,
+                    vote: data.vote,
+                    avatar: data.avatar,
+                    longitude: data.request_longitude,
+                    latitude: data.request_latitude,
+                    status: data.request_status
+                },
+                store: {
+                    id: data.store_id,
+                    phone_number: data.store_phone_number,
+                    name: data.name,
+                    store_type: data.store_type,
+                },
+                location: {
+                    id: data.location_id,
+                    longitude: data.longitude,
+                    latitude: data.latitude,
+                    country: data.country,
+                    city: data.city,
+                    district: data.district,
+                    street: data.street,
+                },
+                shipper:[]
+            }
+            return callback(false, 'get Request Canceled Successful', output);
+
+        }
+
         var getRequestAndListShipperSuccessful = function(data) {
             var data1 = data[0];
             var data2 = data[1];
@@ -497,7 +540,15 @@ RequestModel.prototype.getRequestAndListShipper = function(_requestId, callback)
             .then(getRequestAndListShipperSuccessful)
             .catch(getRequestAndListShipperError);
         }else{
-            return callback(true, 'Request has cancelled !', null);
+            var query = 'SELECT request.id AS request_id, request.longitude AS request_longitude, request.latitude AS request_latitude, request.status AS request_status, request.*, request.phone_number AS request_phone_number, store.phone_number AS store_phone_number, location.*, store.* ' 
+                            + 'FROM request, store, location '
+                            + 'WHERE request.id = $1 AND request.store_id = store.id '
+                            + 'AND store.location_id = location.id ';
+
+            self.db.one(query, values)
+                .then(getRequestCanceledSuccessful)
+                .catch(getRequestAndListShipperError);
+            //return callback(true, 'Request has cancelled !', null);
         }
 
     }
@@ -547,8 +598,8 @@ RequestModel.prototype.cancelRequestByStore = function(_requestId, _storeId, cal
                 var values_2 = [_storeId];
                 var q1 = t.one('UPDATE request SET status = 5 WHERE id = $1 RETURNING *', values_1);
                 var q2 = t.one('UPDATE store SET rating = (rating * vote + 1)/(vote + 1), vote = vote + 1  WHERE id = $1 RETURNING *', values_2);
-              
-                return t.batch([q1, q2]); 
+                var q3 = t.any('UPDATE response SET status = 1 WHERE request_id = $1', values_1);
+                return t.batch([q1, q2, q3]); 
             })
             .then(cancelRequestSuccessful)
             .catch(cancelRequestUnsuccesful);
